@@ -1,0 +1,1994 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🕸️ 3D 臉部動畫前沿知識拓撲與圖譜投影片 🚀 Y2K Graph Deck</title>
+  <!-- KaTeX for formula rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+  <style>
+    :root {
+      /* Softened Pastel Y2K Cyber Palette */
+      --cyan: #38bdf8;
+      --cyan-soft: rgba(56, 189, 248, 0.12);
+      --pink: #f472b6;
+      --pink-soft: rgba(244, 114, 182, 0.12);
+      --lime: #34d399;
+      --lime-soft: rgba(52, 211, 153, 0.12);
+      --amber: #fbbf24;
+      --amber-soft: rgba(251, 191, 36, 0.12);
+      --purple: #a78bfa;
+      --purple-soft: rgba(167, 139, 250, 0.12);
+      
+      --bg-dark: #0f1423;
+      --bg-panel: #151b2e;
+      --card-bg: rgba(21, 28, 48, 0.94);
+      --card-border: 1px solid rgba(56, 189, 248, 0.25);
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-soft: #cbd5e1;
+
+      --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", "Segoe UI Emoji", sans-serif;
+      --font-code: "Cascadia Code", "Consolas", "Courier New", monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        linear-gradient(rgba(56, 189, 248, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(244, 114, 182, 0.04) 1px, transparent 1px);
+      background-size: 32px 32px;
+      color: var(--text-main);
+      font-family: var(--font-body);
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    /* Top Cyber Navigation Bar */
+    .top-bar {
+      height: 56px;
+      background: rgba(15, 20, 35, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1.5px solid rgba(56, 189, 248, 0.3);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      z-index: 1000;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+    }
+
+    .brand-tag {
+      background: linear-gradient(135deg, var(--cyan), var(--pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-family: var(--font-code);
+      font-weight: 900;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .nav-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: var(--text-soft);
+      padding: 0.38rem 0.9rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      text-decoration: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .nav-btn:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--cyan);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    .nav-btn.active {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(244, 114, 182, 0.25));
+      border-color: var(--pink);
+      color: #fff;
+      box-shadow: 0 0 12px rgba(244, 114, 182, 0.3);
+    }
+
+    .nav-btn.pill-lime {
+      border-color: var(--lime);
+      color: var(--lime);
+      background: rgba(52, 211, 153, 0.08);
+    }
+    .nav-btn.pill-lime:hover {
+      background: rgba(52, 211, 153, 0.2);
+    }
+
+    /* Main View Area */
+    #main-container {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      height: calc(100vh - 56px);
+      overflow: hidden;
+    }
+
+    /* ============================================================
+       VIEW 1: MACRO GRAPH CANVAS (全域知識圖譜互動畫布)
+       ============================================================ */
+    #graph-canvas-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 50%, rgba(21, 28, 48, 0.5) 0%, #0a0d18 100%);
+      overflow: hidden;
+      cursor: grab;
+      display: flex;
+    }
+
+    #graph-canvas-container:active {
+      cursor: grabbing;
+    }
+
+    #graph-svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Graph Toolbar & Legend */
+    .graph-hud {
+      position: absolute;
+      top: 1rem;
+      left: 1.5rem;
+      background: rgba(15, 20, 35, 0.88);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 0.65rem;
+      padding: 0.8rem 1.1rem;
+      z-index: 10;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      pointer-events: auto;
+    }
+
+    .hud-title {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .legend-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      font-size: 0.74rem;
+      color: var(--text-soft);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .graph-controls {
+      position: absolute;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      display: flex;
+      gap: 0.5rem;
+      z-index: 10;
+    }
+
+    .ctrl-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      background: rgba(15, 20, 35, 0.88);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: #fff;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .ctrl-btn:hover {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: var(--cyan);
+      transform: scale(1.05);
+    }
+
+    /* SVG Node & Edge styling */
+    .graph-edge {
+      stroke: rgba(56, 189, 248, 0.25);
+      stroke-width: 1.6;
+      transition: stroke 0.3s, stroke-width 0.3s;
+    }
+    .graph-edge.active {
+      stroke: var(--pink) !important;
+      stroke-width: 2.8 !important;
+    }
+    .edge-label {
+      font-size: 10px;
+      fill: #94a3b8;
+      font-family: var(--font-code);
+      text-anchor: middle;
+      pointer-events: none;
+    }
+
+    .graph-node {
+      cursor: pointer;
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+    .graph-node:hover {
+      filter: drop-shadow(0 0 14px rgba(56, 189, 248, 0.6));
+    }
+    .graph-node text {
+      pointer-events: none;
+    }
+
+    /* ============================================================
+       VIEW 2: MICRO SLIDE VIEW (投影片卡片微觀全視角)
+       ============================================================ */
+    #slide-modal {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 13, 24, 0.94);
+      backdrop-filter: blur(14px);
+      z-index: 500;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      overflow-y: auto;
+      padding: 1.5rem;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #slide-modal.open {
+      display: flex;
+      opacity: 1;
+    }
+
+    .slide-card-wrapper {
+      width: 100%;
+      max-width: 1120px;
+      min-height: 82vh;
+      background: var(--card-bg);
+      border: 1.5px solid rgba(56, 189, 248, 0.35);
+      border-radius: 1rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: slidePop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slidePop {
+      from { transform: scale(0.96) translateY(12px); opacity: 0; }
+      to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    /* Slide Card Top Header */
+    .card-top {
+      height: 52px;
+      background: rgba(15, 20, 35, 0.9);
+      border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+      padding: 0 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .card-cluster-badge {
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 0.2rem 0.65rem;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-hub { background: rgba(56, 189, 248, 0.15); color: var(--cyan); border: 1px solid var(--cyan); }
+    .badge-modalities { background: rgba(251, 191, 36, 0.15); color: var(--amber); border: 1px solid var(--amber); }
+    .badge-methods { background: rgba(244, 114, 182, 0.15); color: var(--pink); border: 1px solid var(--pink); }
+    .badge-reps { background: rgba(167, 139, 250, 0.15); color: var(--purple); border: 1px solid var(--purple); }
+    .badge-metrics { background: rgba(52, 211, 153, 0.15); color: var(--lime); border: 1px solid var(--lime); }
+    .badge-scenarios { background: rgba(244, 114, 182, 0.15); color: #f43f5e; border: 1px solid #f43f5e; }
+
+    .card-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .close-btn {
+      background: rgba(244, 114, 182, 0.15);
+      border: 1px solid var(--pink);
+      color: #fff;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      transition: all 0.2s;
+    }
+    .close-btn:hover {
+      background: var(--pink);
+      color: #000;
+    }
+
+    /* Slide Card Body Content */
+    .card-body {
+      flex: 1;
+      padding: 1.8rem 2.2rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .slide-title-bar {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 0.8rem;
+    }
+
+    .slide-title {
+      font-size: 1.7rem;
+      font-weight: 900;
+      line-height: 1.3;
+      margin-bottom: 0.35rem;
+      background: linear-gradient(180deg, #fff 0%, var(--cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .slide-subtitle {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .content-grid-2 {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    .text-column h4 {
+      font-size: 1.05rem;
+      color: var(--cyan);
+      margin-top: 0.6rem;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .text-column p, .text-column li {
+      font-size: 0.92rem;
+      line-height: 1.6;
+      color: var(--text-soft);
+      margin-bottom: 0.55rem;
+    }
+
+    .text-column ul {
+      list-style-type: none;
+      padding-left: 0.2rem;
+    }
+    .text-column ul li {
+      position: relative;
+      padding-left: 1.2rem;
+    }
+    .text-column ul li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: var(--pink);
+      font-weight: bold;
+    }
+
+    /* Schematic Box inside Card */
+    .schematic-card {
+      background: rgba(15, 20, 35, 0.8);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 0.75rem;
+      padding: 0.9rem;
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .schematic-title {
+      font-size: 0.76rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .schematic-card svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Metric Callout Card */
+    .highlight-card {
+      background: rgba(255, 255, 255, 0.03);
+      border-left: 3.5px solid var(--cyan);
+      border-radius: 0 6px 6px 0;
+      padding: 0.8rem 1rem;
+      margin: 0.6rem 0;
+      font-size: 0.88rem;
+    }
+
+    /* Edge Jump Section at bottom of Card */
+    .card-footer-edges {
+      background: rgba(15, 20, 35, 0.9);
+      border-top: 1px solid rgba(56, 189, 248, 0.2);
+      padding: 0.9rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      flex-shrink: 0;
+    }
+
+    .edge-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .edge-row-label {
+      font-size: 0.74rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      min-width: 80px;
+    }
+
+    .edge-jump-pill {
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--cyan);
+      padding: 0.28rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.2s;
+    }
+    .edge-jump-pill:hover {
+      background: rgba(56, 189, 248, 0.25);
+      border-color: var(--cyan);
+      color: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(56, 189, 248, 0.25);
+    }
+
+    .edge-jump-pill.pill-pink {
+      background: rgba(244, 114, 182, 0.08);
+      border-color: rgba(244, 114, 182, 0.35);
+      color: var(--pink);
+    }
+    .edge-jump-pill.pill-pink:hover {
+      background: rgba(244, 114, 182, 0.25);
+      border-color: var(--pink);
+      color: #fff;
+    }
+
+    .edge-jump-pill.pill-amber {
+      background: rgba(251, 191, 36, 0.08);
+      border-color: rgba(251, 191, 36, 0.35);
+      color: var(--amber);
+    }
+    .edge-jump-pill.pill-amber:hover {
+      background: rgba(251, 191, 36, 0.25);
+      border-color: var(--amber);
+      color: #fff;
+    }
+
+    .edge-jump-pill.pill-lime {
+      background: rgba(52, 211, 153, 0.08);
+      border-color: rgba(52, 211, 153, 0.35);
+      color: var(--lime);
+    }
+    .edge-jump-pill.pill-lime:hover {
+      background: rgba(52, 211, 153, 0.25);
+      border-color: var(--lime);
+      color: #fff;
+    }
+
+    .edge-jump-pill.pill-purple {
+      background: rgba(167, 139, 250, 0.08);
+      border-color: rgba(167, 139, 250, 0.35);
+      color: var(--purple);
+    }
+    .edge-jump-pill.pill-purple:hover {
+      background: rgba(167, 139, 250, 0.25);
+      border-color: var(--purple);
+      color: #fff;
+    }
+
+    /* Linear Nav in Footer */
+    .card-bottom-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 0.4rem;
+      border-top: 1px dashed rgba(255, 255, 255, 0.08);
+    }
+
+    .linear-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-soft);
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.2s;
+    }
+    .linear-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+
+    /* Table in slides */
+    .styled-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      margin: 0.5rem 0;
+      background: rgba(15, 20, 35, 0.6);
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+    .styled-table th {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--cyan);
+      padding: 0.45rem 0.6rem;
+      text-align: left;
+      font-weight: 700;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.25);
+    }
+    .styled-table td {
+      padding: 0.45rem 0.6rem;
+      color: var(--text-soft);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .styled-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .highlight-cell {
+      color: var(--lime) !important;
+      font-weight: 800;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Cyber Bar -->
+  <header class="top-bar">
+    <div class="brand">
+      <span>🛸</span>
+      <span class="brand-tag">3D-FACE GRAPH.EXE</span>
+      <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">· 前沿知識拓撲與圖譜投影片</span>
+    </div>
+
+    <div class="nav-tabs">
+      <button class="nav-btn active" id="btn-mode-graph" onclick="switchView('graph')">🕸️ 全域拓撲圖 (Graph)</button>
+      <button class="nav-btn" id="btn-mode-slide" onclick="switchView('slide')">🃏 投影片卡片 (Slide)</button>
+      <a href="../handouts/3D_Facial_Animation_Handbook.html" class="nav-btn pill-lime">📖 推薦講義手冊 ↗</a>
+      <a href="3D_Facial_Animation_Survey.html" class="nav-btn">🖥️ 經典簡報 ↗</a>
+    </div>
+  </header>
+
+  <!-- Main View Container -->
+  <main id="main-container">
+
+    <!-- ========================================== -->
+    <!-- VIEW 1: MACRO GRAPH CANVAS                -->
+    <!-- ========================================== -->
+    <div id="graph-canvas-container">
+      
+      <!-- Graph HUD Overlay -->
+      <div class="graph-hud">
+        <div class="hud-title"><span>🌐</span> 知識圖譜導覽指針</div>
+        <div class="legend-list">
+          <div class="legend-item"><div class="legend-dot" style="background: var(--cyan);"></div> 核心樞紐 (Hub)</div>
+          <div class="legend-item"><div class="legend-dot" style="background: var(--amber);"></div> 輸入模態層 (Modalities)</div>
+          <div class="legend-item"><div class="legend-dot" style="background: var(--pink);"></div> 核心論文方法層 (Papers)</div>
+          <div class="legend-item"><div class="legend-dot" style="background: var(--purple);"></div> 3D 幾何表徵層 (Representations)</div>
+          <div class="legend-item"><div class="legend-dot" style="background: var(--lime);"></div> 評測基準層 (Metrics)</div>
+          <div class="legend-item"><div class="legend-dot" style="background: #f43f5e;"></div> 擬推薦決策層 (Scenarios)</div>
+        </div>
+        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.6rem;">
+          💡 <strong>操作提示</strong>：點選任一節點進入該投影片；拖曳移動畫布。
+        </div>
+      </div>
+
+      <!-- Graph Canvas Zoom Controls -->
+      <div class="graph-controls">
+        <button class="ctrl-btn" onclick="zoomGraph(1.15)" title="放大">+</button>
+        <button class="ctrl-btn" onclick="zoomGraph(0.85)" title="縮小">-</button>
+        <button class="ctrl-btn" onclick="resetGraphZoom()" title="重置視角">⟲</button>
+      </div>
+
+      <!-- Interactive SVG Graph -->
+      <svg id="graph-svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <!-- Arrow Markers -->
+          <marker id="arrow-cyan" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#38bdf8"/></marker>
+          <marker id="arrow-pink" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#f472b6"/></marker>
+          <marker id="arrow-lime" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#34d399"/></marker>
+          <marker id="arrow-amber" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#fbbf24"/></marker>
+          <marker id="arrow-purple" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#a78bfa"/></marker>
+
+          <!-- Glow Filter -->
+          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3.5" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+          </filter>
+        </defs>
+
+        <!-- Dynamic Graph Container (g-transformable) -->
+        <g id="graph-root" transform="matrix(1 0 0 1 0 0)">
+          <!-- Rendered dynamically by JavaScript -->
+          <g id="edges-layer"></g>
+          <g id="nodes-layer"></g>
+        </g>
+      </svg>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VIEW 2: MICRO SLIDE MODAL CARD            -->
+    <!-- ========================================== -->
+    <div id="slide-modal">
+      <div class="slide-card-wrapper">
+        
+        <!-- Top Bar inside Card -->
+        <div class="card-top">
+          <div style="display: flex; align-items: center; gap: 0.65rem;">
+            <span class="card-cluster-badge" id="modal-cluster-badge">CLUSTER</span>
+            <span style="font-size: 0.82rem; color: var(--text-muted); font-family: var(--font-code);" id="modal-node-id">NODE 00</span>
+          </div>
+
+          <div class="card-actions">
+            <button class="close-btn" onclick="closeSlideModal()">🌐 返回拓撲圖譜 (Esc)</button>
+          </div>
+        </div>
+
+        <!-- Slide Main Content (Injected by JS) -->
+        <div class="card-body" id="modal-card-body">
+          <!-- Dynamic Slide Content -->
+        </div>
+
+        <!-- Bottom Jump Pills (Edges) -->
+        <div class="card-footer-edges">
+          <!-- Inbound Edges -->
+          <div class="edge-row">
+            <span class="edge-row-label">⬅️ 前序躍遷 (In) :</span>
+            <div id="modal-inbound-edges" style="display: flex; gap: 0.4rem; flex-wrap: wrap;"></div>
+          </div>
+          <!-- Outbound Edges -->
+          <div class="edge-row">
+            <span class="edge-row-label">➡️ 關聯躍遷 (Out) :</span>
+            <div id="modal-outbound-edges" style="display: flex; gap: 0.4rem; flex-wrap: wrap;"></div>
+          </div>
+          <!-- Linear Sequence Buttons -->
+          <div class="card-bottom-nav">
+            <button class="linear-btn" onclick="navigateLinear(-1)">← 上一個節點</button>
+            <span style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-code);" id="modal-counter">0 / 14</span>
+            <button class="linear-btn" onclick="navigateLinear(1)">下一個節點 →</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- GRAPH & SLIDE DATA ENGINE                  -->
+  <!-- ========================================== -->
+  <script>
+    /* 15 Graph Nodes Definition (Node 00 to 14) */
+    const GRAPH_NODES = [
+      {
+        id: "00",
+        label: "00. 全景樞紐導論",
+        sub: "3D-Face 問題定義",
+        cluster: "hub",
+        x: 600,
+        y: 400,
+        r: 38,
+        color: "#38bdf8",
+        badge: "badge-hub",
+        clusterName: "中央全景樞紐",
+        title: "🌐 00. 3D 臉部動畫前沿全景圖譜與核心問題定義",
+        subtitle: "打破線性簡報束縛，以網狀圖譜解碼 2025~2026 前沿演進",
+        contentHtml: `
+          <div class="content-grid-2">
+            <div class="text-column">
+              <h4>🎯 3D 臉部動畫的核心學術命題</h4>
+              <p>給定任意語音聲學訊號 $A_{1:T}$，如何精準驅動並合成具備身分一致性、音唇同步、逼真非語言微表情與自然頭部晃動的 3D 臉部動態？</p>
+              
+              <h4>⚡ 三大歷史瓶頸與前沿突破方向</h4>
+              <ul>
+                <li><strong>均值回歸面癱（石雕臉）</strong>：傳統回歸模型因 L2 損失傾向輸出平均口型，前沿研究透過<strong>擴散模型 (Diffusion)</strong> 注入多樣性。</li>
+                <li><strong>身首異處與長序列抖動</strong>：缺乏頭部協同導緻表情僵硬，<strong>EmoPoseFace</strong> 提出雙分支解耦克服姿態干涉。</li>
+                <li><strong>神經渲染延遲高</strong>：NeRF 無法達到即時要求，<strong>ESGaussianFace</strong> 引入 3DGS 實現 69 FPS 照片級超高速合成。</li>
+              </ul>
+
+              <div class="highlight-card">
+                <strong>🧭 圖譜探索路徑指針：</strong><br>
+                • <strong>論文演進線</strong>：01 語音 $\to$ 03 DiffusionTalker $\to$ 04 RefFace $\to$ 05 EmoPoseFace $\to$ 06 ESGaussianFace<br>
+                • <strong>幾何表徵線</strong>：07 FLAME Mesh $\leftrightarrow$ 08 Blendshapes $\leftrightarrow$ 09 3DGS<br>
+                • <strong>實務落地線</strong>：10 評測指標 $\to$ 11 綜合大比拚 $\to$ 12 業務推薦決策樹 $\to$ 13 避坑指南
+              </div>
+            </div>
+
+            <div class="schematic-card">
+              <div class="schematic-title">🗺️ 全域圖譜五大維度拓撲架構</div>
+              <svg viewBox="0 0 400 300">
+                <rect x="130" y="20" width="140" height="40" rx="6" fill="rgba(56, 189, 248, 0.2)" stroke="#38bdf8"/>
+                <text x="200" y="45" fill="#38bdf8" font-size="11" font-weight="bold" text-anchor="middle">中央核心全景 (00)</text>
+
+                <path d="M 160 60 L 90 100" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrow-amber)"/>
+                <rect x="20" y="100" width="130" height="36" rx="6" fill="rgba(251, 191, 36, 0.15)" stroke="#fbbf24"/>
+                <text x="85" y="123" fill="#fbbf24" font-size="10" font-weight="bold" text-anchor="middle">輸入模態層 (01, 02)</text>
+
+                <path d="M 240 60 L 310 100" stroke="#f472b6" stroke-width="1.5" marker-end="url(#arrow-pink)"/>
+                <rect x="250" y="100" width="130" height="36" rx="6" fill="rgba(244, 114, 182, 0.15)" stroke="#f472b6"/>
+                <text x="315" y="123" fill="#f472b6" font-size="10" font-weight="bold" text-anchor="middle">核心論文層 (03~06)</text>
+
+                <path d="M 85 136 L 85 180" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrow-purple)"/>
+                <rect x="20" y="180" width="130" height="36" rx="6" fill="rgba(167, 139, 250, 0.15)" stroke="#a78bfa"/>
+                <text x="85" y="203" fill="#a78bfa" font-size="10" font-weight="bold" text-anchor="middle">幾何表徵層 (07~09)</text>
+
+                <path d="M 315 136 L 315 180" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-lime)"/>
+                <rect x="250" y="180" width="130" height="36" rx="6" fill="rgba(52, 211, 153, 0.15)" stroke="#34d399"/>
+                <text x="315" y="203" fill="#34d399" font-size="10" font-weight="bold" text-anchor="middle">評測指標層 (10, 11)</text>
+
+                <path d="M 200 216 L 200 240" stroke="#f43f5e" stroke-width="1.5"/>
+                <path d="M 150 200 L 200 240 L 250 200" stroke="#f43f5e" stroke-width="1.5"/>
+                <rect x="120" y="240" width="160" height="40" rx="6" fill="rgba(244, 63, 94, 0.15)" stroke="#f43f5e"/>
+                <text x="200" y="265" fill="#f43f5e" font-size="11" font-weight="bold" text-anchor="middle">擬推薦決策層 (12~14)</text>
+              </svg>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "01",
+        label: "01. 語音編碼器選型",
+        sub: "HuBERT vs Wav2Vec",
+        cluster: "modalities",
+        x: 420,
+        y: 270,
+        r: 30,
+        color: "#fbbf24",
+        badge: "badge-modalities",
+        clusterName: "輸入模態層",
+        title: "🔊 01. 語音驅動心臟：聲學編碼器選型實證定論",
+        subtitle: "自監督特徵如何左右唇形精確度與抗噪能力",
+        contentHtml: `
+          <div class="content-grid-2">
+            <div class="text-column">
+              <h4>👑 HuBERT 的統治地位</h4>
+              <p>在所有近代 3D 臉部動畫頂會模型中，<strong>HuBERT</strong> 已被實證證明是口型同步的最強音訊特徵提取器。其自監督學習的中間隱藏層（特別是第 11~12 層）對語音學音素邊界最為敏感，實測在 <strong>LVE (唇部誤差)</strong> 上顯著超越 Wav2Vec 2.0 達 10%~20%。</p>
+
+              <h4>⚖️ 三大編碼器對照比較</h4>
+              <ul>
+                <li><strong>HuBERT</strong>：聲學音素分界清晰、強抗噪能力，是 SOTA 模型首選（RefFace, EmoPoseFace 均採納）。</li>
+                <li><strong>Wav2Vec 2.0</strong>：早期經典標配（FaceFormer, CodeTalker, DiffusionTalker），但對同音異義與背景噪聲敏感度略高。</li>
+                <li><strong>DeepSpeech</strong>：基於 ASR 聲學特徵，模型緊湊輕量，常與空間注意力（ESGaussianFace）結合。</li>
+              </ul>
+              
+              <div class="highlight-card">
+                <strong>時序對齊工程法則：</strong> 語音取樣 16kHz $\to$ 提取 50Hz 聲學特徵 $\to$ 透過線性插值或時序卷積對齊至 30 FPS / 60 FPS 幾何動畫幀。
+              </div>
+            </div>
+
+            <div class="schematic-card">
+              <div class="schematic-title">🧬 聲學編碼與特徵對齊流程圖</div>
+              <svg viewBox="0 0 380 240">
+                <rect x="20" y="30" width="80" height="40" rx="4" fill="rgba(255,255,255,0.06)" stroke="#fbbf24"/>
+                <text x="60" y="55" fill="#fbbf24" font-size="10" text-anchor="middle">音訊 (16kHz)</text>
+
+                <path d="M 100 50 L 140 50" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrow-amber)"/>
+                <rect x="140" y="20" width="110" height="60" rx="6" fill="rgba(251, 191, 36, 0.15)" stroke="#fbbf24"/>
+                <text x="195" y="45" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle">HuBERT / W2V2</text>
+                <text x="195" y="65" fill="#fbbf24" font-size="9" text-anchor="middle">SSL 隱藏層 (50Hz)</text>
+
+                <path d="M 250 50 L 290 50" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrow-amber)"/>
+                <rect x="290" y="30" width="75" height="40" rx="4" fill="rgba(56, 189, 248, 0.15)" stroke="#38bdf8"/>
+                <text x="327" y="55" fill="#38bdf8" font-size="10" text-anchor="middle">時序對齊</text>
+
+                <path d="M 327 70 L 327 120" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrow-cyan)"/>
+                <rect x="190" y="120" width="175" height="45" rx="6" fill="rgba(244, 114, 182, 0.15)" stroke="#f472b6"/>
+                <text x="277" y="147" fill="#f472b6" font-size="11" font-weight="bold" text-anchor="middle">3D 臉部動畫擴散模型</text>
+              </svg>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "02",
+        label: "02. 外部條件解耦",
+        sub: "特徵點 / 姿態 / 情緒",
+        cluster: "modalities",
+        x: 420,
+        y: 450,
+        r: 30,
+        color: "#fbbf24",
+        badge: "badge-modalities",
+        clusterName: "輸入模態層",
+        title: "🎭 02. 多模態外部引導：特徵點、情緒與姿態條件解耦",
+        subtitle: "如何注入豐富表情而不破壞唇形音唇同步",
+        contentHtml: `
+          <div class="content-grid-2">
+            <div class="text-column">
+              <h4>🎯 外部控制條件的三大家族</h4>
+              <ul>
+                <li><strong>稀疏 3D 特徵點 (Landmarks)</strong>：48~68 個幾何點，提供強烈的臉部輪廓先驗（RefFace），兼顧身分無關性。</li>
+                <li><strong>連續情感強度與 FACS 肌肉單元</strong>：8 類情緒標籤或 ESAU 局部肌肉權重，打破傳統離散情緒僵化感。</li>
+                <li><strong>頭部姿態 (Head Pose)</strong>：3 自由度尤拉角（Pitch, Yaw, Roll），決定說話節奏與韻律感（EmoPoseFace）。</li>
+              </ul>
+
+              <h4>⚠️ 核心挑戰：多模態衝突</h4>
+              <p>如果外部特徵（如大笑）強度過高，容易導致閉唇音（/p/, /b/, /m/）發生「漏風」無力。現代研究均採用<strong>雙分支解耦（Dual-Branch）</strong>或<strong>空間注意力遮罩（ESAM）</strong>確保嘴唇區域優先服從語音。</p>
+            </div>
+
+            <div class="schematic-card">
+              <div class="schematic-title">🎛️ 多模態條件注入管線</div>
+              <svg viewBox="0 0 380 240">
+                <rect x="20" y="20" width="100" height="30" rx="4" fill="rgba(56, 189, 248, 0.15)" stroke="#38bdf8"/>
+                <text x="70" y="40" fill="#38bdf8" font-size="10" text-anchor="middle">語音聲學特徵</text>
+
+                <rect x="20" y="65" width="100" height="30" rx="4" fill="rgba(251, 191, 36, 0.15)" stroke="#fbbf24"/>
+                <text x="70" y="85" fill="#fbbf24" font-size="10" text-anchor="middle">3D 特徵點 (Ref)</text>
+
+                <rect x="20" y="110" width="100" height="30" rx="4" fill="rgba(244, 114, 182, 0.15)" stroke="#f472b6"/>
+                <text x="70" y="130" fill="#f472b6" font-size="10" text-anchor="middle">情緒標籤 / 姿態</text>
+
+                <path d="M 120 35 L 170 70" stroke="#38bdf8" stroke-width="1.5"/>
+                <path d="M 120 80 L 170 80" stroke="#fbbf24" stroke-width="1.5"/>
+                <path d="M 120 125 L 170 90" stroke="#f472b6" stroke-width="1.5"/>
+
+                <rect x="170" y="55" width="180" height="50" rx="6" fill="rgba(255,255,255,0.06)" stroke="#a78bfa"/>
+                <text x="260" y="80" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle">Cross-Attention & FiLM 調製</text>
+                <text x="260" y="96" fill="#a78bfa" font-size="9" text-anchor="middle">(空間遮罩隔離嘴型與情緒)</text>
+              </svg>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "03",
+        label: "03. DiffusionTalker",
+        sub: "3 步去噪與極致蒸餾",
+        cluster: "methods",
+        x: 600,
+        y: 190,
+        r: 32,
+        color: "#f472b6",
+        badge: "badge-methods",
+        clusterName: "核心論文突破",
+        title: "⚡ 03. DiffusionTalker: 蒸餾擴散模型與端側極致輕量化",
+        subtitle: "ICME 2025 · 攻克擴散模型延遲難題，專為 VR 與行動端而生",
+        contentHtml: `
+          <div class="content-grid-2">
+            <div class="text-column">
+              <h4>🎯 核心出發點</h4>
+              <p>擴散模型生成品質優越，但傳統 DDPM 需要 50~100 步去噪，單幀推論動輒數秒，根本無法即時互動。DiffusionTalker 首創<strong>「個人化特徵 + 雙重知識蒸餾」</strong>架構。</p>
+
+              <h4>⚡ 兩大革命性突破</h4>
+              <ul>
+                <li><strong>個人化特徵 (Personalizer)</strong>：結合身份先驗與情緒對比學習，只需少數參考音訊即能精確捕捉個人獨特的發音肌肉習慣。</li>
+                <li><strong>漸進式雙重蒸餾 (Dual Distillation)</strong>：
+                  <br>1. <em>步數折半蒸餾</em>：將 50 步去噪逐步壓縮至 <strong>僅需 3 步</strong>，單幀推論縮短至 <strong>41ms (24+ FPS)</strong>。
+                  <br>2. <em>音訊網絡蒸餾</em>：將笨重 Wav2Vec2 蒸餾為緊湊卷積網絡，<strong>模型大小狂降 80% (僅剩 34MB)</strong>。
+                </li>
+              </ul>
+
+              <div class="highlight-card">
+                <strong>實測評測指標：</strong> LVE 達到 $1.81 \times 10^{-4}$ mm，直通 ARKit 52 Blendshapes，完美相容 Unity 與 Quest 3。
+              </div>
+            </div>
+
+            <div class="schematic-card">
+              <div class="schematic-title">📉 步數與模型雙重知識蒸餾管線</div>
+              <svg viewBox="0 0 380 220">
+                <rect x="20" y="20" width="150" height="40" rx="6" fill="rgba(244, 114, 182, 0.1)" stroke="#f472b6"/>
+                <text x="95" y="45" fill="#f472b6" font-size="10" font-weight="bold" text-anchor="middle">教師模型 (50 步 DDPM)</text>
+
+                <path d="M 95 60 L 95 100" stroke="#f472b6" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrow-pink)"/>
+                <text x="145" y="85" fill="#f472b6" font-size="9">漸進式折半蒸餾</text>
+
+                <rect x="20" y="100" width="150" height="40" rx="6" fill="rgba(52, 211, 153, 0.2)" stroke="#34d399"/>
+                <text x="95" y="125" fill="#34d399" font-size="10" font-weight="bold" text-anchor="middle">學生模型 (3 步極速)</text>
+
+                <rect x="210" y="20" width="150" height="40" rx="6" fill="rgba(255,255,255,0.05)" stroke="#94a3b8"/>
+                <text x="285" y="45" fill="#94a3b8" font-size="10" text-anchor="middle">原生 Wav2Vec2 (180MB)</text>
+
+                <path d="M 285 60 L 285 100" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrow-cyan)"/>
+                <text x="325" y="85" fill="#38bdf8" font-size="9">特徵對齊</text>
+
+                <rect x="210" y="100" width="150" height="40" rx="6" fill="rgba(56, 189, 248, 0.2)" stroke="#38bdf8"/>
+                <text x="285" y="125" fill="#38bdf8" font-size="10" font-weight="bold" text-anchor="middle">輕量網絡 (34MB)</text>
+
+                <rect x="70" y="165" width="240" height="35" rx="6" fill="rgba(251, 191, 36, 0.15)" stroke="#fbbf24"/>
+                <text x="190" y="187" fill="#fbbf24" font-size="11" font-weight="bold" text-anchor="middle">輸出：52 維 Blendshape (41ms)</text>
+              </svg>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "04",
+        label: "04. RefFace",
+        sub: "參考幾何與時空注意力",
+        cluster: "methods",
+        x: 780,
+        y: 270,
+        r: 32,
+        color: "#f472b6",
+        badge: "badge-methods",
+        clusterName: "核心論文突破",
+        title: "🛸 04. RefFace: 參考幾何特徵點引導與時空注意力擴散",
+        subtitle: "AIAHPC 2025 · 擺脫身分綁架，實現靈活幾何解耦",
+        contentHtml: `
+          <div class="content-grid-2">
+            <div class="text-column">
+              <h4>🎯 核心出發點</h4>
+              <p>傳統語音驅動臉部模型往往直接在發音人的 3D Mesh 上訓練，導致語音特徵與臉型拓撲深度交纏，難以泛化至新角色。RefFace 提出首個將 <strong>3D Landmarks 特徵點作為獨立參考條件 (Reference)</strong> 的擴散架構。</p>
+
+              <h4>🛸 關鍵技術機制</h4>
+              <ul>
+                <li><strong>幾何特徵點獨立引導</strong>：將 3D Landmarks 透過編碼器轉為幾何先驗，徹底與發音人高密度 Mesh 解耦。</li>
+                <li><strong>時空交叉注意力 (Spatial-Temporal Attention)</strong>：
+                  <br>• <em>空間維度</em>：精確捕捉嘴唇閉合幾何約束。
+                  <br>• <em>時間維度</em>：長序列平滑，杜絕逐幀跳變。
+                </li>
+                <li><strong>FiLM 動態特徵調製</strong>：自適應縮放並平移潛在空間特徵，無縫匹配不同發音臉型。</li>
+              </ul>
+
+              <div class="highlight-card">
+                <strong>BIWI 資料集頂峰：</strong> LVE 達到 $5.97 \times 10^{-5}$ mm，跨資料集零樣本泛化能力極強。
+              </div>
+            </div>
+
+            <div class="schematic-card">
+              <div class="schematic-title">📐 RefFace 時空交叉注意力架構</div>
+              <svg viewBox="0 0 380 230">
+                <rect x="20" y="30" width="100" height="35" rx="4" fill="rgba(56, 189, 248, 0.15)" stroke="#38bdf8"/>
+                <text x="70" y="52" fill="#38bdf8" font-size="10" text-anchor="middle">音訊特徵 (HuBERT)</text>
+
+                <rect x="20" y="80" width="100" height="35" rx="4" fill="rgba(251, 191, 36, 0.15)" stroke="#fbbf24"/>
+                <text x="70" y="102" fill="#fbbf24" font-size="10" text-anchor="middle">3D 特徵點 (Ref)</text>
+
+                <path d="M 120 47 L 160 70" stroke="#38bdf8" stroke-width="1.5"/>
+                <path d="M 120 97 L 160 80" stroke="#fbbf24" stroke-width="1.5"/>
+
+                <rect x="160" y="50" width="110" height="55" rx="6" fill="rgba(244, 114, 182, 0.15)" stroke="#f472b6"/>
+                <text x="215" y="75" fill="#f472b6" font-size="10" font-weight="bold" text-anchor="middle">時空注意力</text>
+                <text x="215" y="92" fill="#fff" font-size="9" text-anchor="middle">(Spatial + Temporal)</text>
+
+                <path d="M 270 77 L 300 77" stroke="#f472b6" stroke-width="1.5" marker-end="url(#arrow-pink)"/>
+                <rect x="300" y="55" width="65" height="45" rx="4" fill="rgba(255,255,255,0.06)" stroke="#a78bfa"/>
+                <text x="332" y="82" fill="#a78bfa" font-size="10" text-anchor="middle">FiLM 調製</text>
+
+                <path d="M 332 100 L 332 150" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrow-purple)"/>
+                <rect x="190" y="150" width="175" height="40" rx="6" fill="rgba(52, 211, 153, 0.15)" stroke="#34d399"/>
+                <text x="277" y="175" fill="#34d399" font-size="10" font-weight="bold" text-anchor="middle">FLAME 5023 頂點 Mesh</text>
+              </svg>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "05",
+        label: "05. EmoPoseFace",
+        sub: "雙分支姿態與情感解耦",
+        cluster: "methods",
+        x: 780,
+        y: 450,
+        r: 32,
+        color: "#f472b6",
+        badge: "badge-methods",
+        clusterName: "核心論文突破",
+        title: "🤖 05. EmoPoseFace: 語音-情感-頭部姿態雙分支協同解耦",
+        subtitle: "IEEE TVCG 2026 (頂刊) · 首個同步協同生成頭部姿態與情感的擴散模型",
+        contentHtml: `
+          <div class="content-grid-2">
+            <div class="text-column">
+              <h4>🎯 核心出發點</h4>
+              <p>過去模型只預測嘴型，導致「身首異處（身軀如石雕、只有嘴巴動）」；若直接聯合回歸，語音又會被激烈的晃頭姿態嚴重干擾。EmoPoseFace 首創<strong>雙分支時序 GRU 解耦架構</strong>。</p>
+
+              <h4>🤖 三大核心創新</h4>
+              <ul>
+                <li><strong>雙分支解耦 GRU</strong>：
+                  <br>• <em>表情分支</em>：專注音訊與局部微表情幾何對齊。
+                  <br>• <em>節奏分支</em>：專注語音節奏與頭部 3D 姿態角（Pitch, Yaw, Roll）。
+                </li>
+                <li><strong>潛在擴散模型 (LDM)</strong>：在緊湊潛在空間進行去噪，大幅提升生成多樣性與真實感。</li>
+                <li><strong>GL-FFE 與 FMSB 平滑演算法</strong>：保證局部表情平滑漸變，徹底消除動作突變卡頓。</li>
+              </ul>
+
+              <div class="highlight-card">
+                <strong>頂刊級實測表現：</strong> 姿態節奏一致性 <strong>BA = 0.81</strong>，情感辨識率 <strong>$\text{Acc}_{emo} = 92.5\%$</strong>，LVE 達到全場最低的 <strong>$5.71 \times 10^{-5}$ mm (SOTA)</strong>。
+              </div>
+            </div>
+
+            <div class="schematic-card">
+              <div class="schematic-title">🔀 雙分支 GRU 姿態與表情協同管線</div>
+              <svg viewBox="0 0 380 230">
+                <rect x="20" y="70" width="80" height="40" rx="4" fill="rgba(56, 189, 248, 0.15)" stroke="#38bdf8"/>
+                <text x="60" y="95" fill="#38bdf8" font-size="10" text-anchor="middle">語音輸入</text>
+
+                <path d="M 100 80 L 140 45" stroke="#f472b6" stroke-width="1.5"/>
+                <path d="M 100 100 L 140 135" stroke="#fbbf24" stroke-width="1.5"/>
+
+                <rect x="140" y="25" width="120" height="40" rx="4" fill="rgba(244, 114, 182, 0.15)" stroke="#f472b6"/>
+                <text x="200" y="45" fill="#f472b6" font-size="10" font-weight="bold" text-anchor="middle">表情分支 GRU</text>
+                <text x="200" y="58" fill="#fff" font-size="8" text-anchor="middle">(臉部微動作)</text>
+
+                <rect x="140" y="115" width="120" height="40" rx="4" fill="rgba(251, 191, 36, 0.15)" stroke="#fbbf24"/>
+                <text x="200" y="135" fill="#fbbf24" font-size="10" font-weight="bold" text-anchor="middle">節奏分支 GRU</text>
+                <text x="200" y="148" fill="#fff" font-size="8" text-anchor="middle">(頭部姿態 Pose)</text>
+
+                <path d="M 260 45 L 290 70" stroke="#f472b6" stroke-width="1.5"/>
+                <path d="M 260 135 L 290 100" stroke="#fbbf24" stroke-width="1.5"/>
+
+                <rect x="290" y="65" width="75" height="50" rx="6" fill="rgba(167, 139, 250, 0.2)" stroke="#a78bfa"/>
+                <text x="327" y="88" fill="#a78bfa" font-size="10" font-weight="bold" text-anchor="middle">LDM 擴散</text>
+                <text x="327" y="104" fill="#34d399" font-size="9" text-anchor="middle">FMSB 平滑</text>
+
+                <rect x="190" y="180" width="175" height="35" rx="6" fill="rgba(52, 211, 153, 0.15)" stroke="#34d399"/>
+                <text x="277" y="202" fill="#34d399" font-size="10" font-weight="bold" text-anchor="middle">輸出：FLAME Mesh + 3D Pose</text>
+              </svg>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "06",
+        label: "06. ESGaussianFace",
+        sub: "3DGS 照片級神經渲染",
+        cluster: "methods",
+        x: 600,
+        y: 610,
+        r: 32,
+        color: "#f472b6",
+        badge: "badge-methods",
+        clusterName: "核心論文突破",
+        title: "💖 06. ESGaussianFace: 3DGS 多視角超寫實神經渲染新紀元",
+        subtitle: "IEEE TVCG 2026 (頂刊) · 69 FPS 實時渲染 + 任意情感微調 + 藝術風格遷移",
+        contentHtml: `
+          <div class="content-grid-2">
+            <div class="text-column">
+              <h4>🎯 顛覆傳統幾何網格的範式躍遷</h4>
+              <p>過去模型大多輸出「白色無貼圖的幾何網格 (Mesh)」，後續還需昂貴的毛髮、舌齒貼圖與光影烘焙。ESGaussianFace 首度採用 <strong>3D Gaussian Splatting (3DGS)</strong>，直接輸出多視角逼真視訊！</p>
+
+              <h4>💖 三大核心技術支柱</h4>
+              <ul>
+                <li><strong>顯式 3D 高斯光柵化</strong>：正交三平面 (Triplane) + 空間注意力 (ESAM)，即時預測高斯球的位移與協方差矩陣，達到 <strong>69 FPS 超高速渲染</strong>。</li>
+                <li><strong>階層式情緒肌肉動作單元 (ESAU)</strong>：15 個 AU 肌肉群，支援在推論時即時微調情感強度 $(0.0 \sim 1.0)$。</li>
+                <li><strong>三階段解耦訓練策略 (Multi-Stage Training)</strong>：中性嘴型 $\to$ 情感形變 $\to$ 藝術風格遷移（Cyberpunk, Sketch, Anime），互不破壞。</li>
+              </ul>
+
+              <div class="highlight-card">
+                <strong>頂級視聽同步：</strong> SyncNet 達到 <strong>6.85 SOTA</strong>，原生具備牙齒反光、舌頭深度與髮絲動態。
+              </div>
+            </div>
+
+            <div class="schematic-card">
+              <div class="schematic-title">🎨 三階段高斯形變與渲染管線</div>
+              <svg viewBox="0 0 380 230">
+                <rect x="20" y="20" width="90" height="30" rx="4" fill="rgba(56, 189, 248, 0.15)" stroke="#38bdf8"/>
+                <text x="65" y="40" fill="#38bdf8" font-size="9" text-anchor="middle">語音 + ESAU</text>
+
+                <path d="M 110 35 L 140 35" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrow-cyan)"/>
+                <rect x="140" y="20" width="105" height="30" rx="4" fill="rgba(255,255,255,0.06)" stroke="#a78bfa"/>
+                <text x="192" y="40" fill="#a78bfa" font-size="9" text-anchor="middle">Triplane 空間解碼</text>
+
+                <path d="M 245 35 L 275 35" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrow-purple)"/>
+                <rect x="275" y="20" width="85" height="30" rx="4" fill="rgba(244, 114, 182, 0.2)" stroke="#f472b6"/>
+                <text x="317" y="40" fill="#f472b6" font-size="9" font-weight="bold" text-anchor="middle">3DGS 點雲</text>
+
+                <rect x="40" y="80" width="300" height="60" rx="6" fill="rgba(255,255,255,0.03)" stroke="rgba(56, 189, 248, 0.25)"/>
+                <text x="190" y="100" fill="#fbbf24" font-size="10" font-weight="bold" text-anchor="middle">三階段解耦訓練 (Multi-Stage Training)</text>
+                <text x="190" y="118" fill="#text-soft" font-size="8.5" text-anchor="middle">階段 I: 中性唇形  ➔  階段 II: 情感形變  ➔  階段 III: 風格遷移</text>
+
+                <path d="M 190 140 L 190 170" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-lime)"/>
+                <rect x="90" y="170" width="200" height="40" rx="6" fill="rgba(52, 211, 153, 0.2)" stroke="#34d399"/>
+                <text x="190" y="195" fill="#34d399" font-size="11" font-weight="bold" text-anchor="middle">69 FPS 多視角寫實視訊</text>
+              </svg>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "07",
+        label: "07. FLAME 統計網格",
+        sub: "5023 頂點經典拓撲",
+        cluster: "reps",
+        x: 930,
+        y: 240,
+        r: 28,
+        color: "#a78bfa",
+        badge: "badge-reps",
+        clusterName: "幾何表徵層",
+        title: "📐 07. 3D 幾何表徵基石：FLAME 統計網格拓撲模型",
+        subtitle: "學術界統治地位的 5023 頂點解耦人臉標準",
+        contentHtml: `
+          <div class="content-grid-2">
+            <div class="text-column">
+              <h4>📐 FLAME 數學公式解構</h4>
+              <p>$$M(\beta, \theta, \psi) = T_P(\bar{T} + B_S(\beta; \mathcal{S}) + B_P(\theta; \mathcal{P}) + B_E(\psi; \mathcal{E}), J(\beta), \theta, \mathcal{W})$$</p>
+
+              <h4>🌟 三大解耦維度</h4>
+              <ul>
+                <li><strong>身分形變 $\beta \in \mathbb{R}^{100}$</strong>：決定臉型高矮胖瘦與種族外貌特徵。</li>
+                <li><strong>表情形變 $\psi \in \mathbb{R}^{50}$</strong>：捕捉張嘴、微笑、皺眉等動態幾何形變。</li>
+                <li><strong>關節姿態 $\theta \in \mathbb{R}^{3 \times 5}$</strong>：控制頸部旋轉、下顎開合與雙眼視線方向。</li>
+              </ul>
+
+              <div class="highlight-card">
+                <strong>學術地位：</strong> 固定 5023 個頂點使頂點間歐氏距離（LVE, FVE）測量具備統一標準。但其缺陷為不包含口腔舌齒與頭髮。
+              </div>
+            </div>
+
+            <div class="schematic-card">
+              <div class="schematic-title">🧩 FLAME 網格解耦疊加示意圖</div>
+              <svg viewBox="0 0 380 200">
+                <rect x="20" y="30" width="65" height="35" rx="4" fill="rgba(255,255,255,0.06)" stroke="#94a3b8"/>
+                <text x="52" y="52" fill="#94a3b8" font-size="9" text-anchor="middle">平均臉 (T)</text>
+
+                <text x="95" y="55" fill="#fff" font-size="14" font-weight="bold">+</text>
+                <rect x="110" y="30" width="65" height="35" rx="4" fill="rgba(56, 189, 248, 0.15)" stroke="#38bdf8"/>
+                <text x="142" y="52" fill="#38bdf8" font-size="9" text-anchor="middle">身分 (Bs)</text>
+
+                <text x="185" y="55" fill="#fff" font-size="14" font-weight="bold">+</text>
+                <rect x="200" y="30" width="65" height="35" rx="4" fill="rgba(244, 114, 182, 0.15)" stroke="#f472b6"/>
+                <text x="232" y="52" fill="#f472b6" font-size="9" text-anchor="middle">表情 (Be)</text>
+
+                <text x="275" y="55" fill="#fff" font-size="14" font-weight="bold">+</text>
+                <rect x="290" y="30" width="65" height="35" rx="4" fill="rgba(251, 191, 36, 0.15)" stroke="#fbbf24"/>
+                <text x="322" y="52" fill="#fbbf24" font-size="9" text-anchor="middle">姿態 (Bp)</text>
+
+                <path d="M 190 75 L 190 120" stroke="#a78bfa" stroke-width="1.8" marker-end="url(#arrow-purple)"/>
+                <rect x="90" y="120" width="200" height="45" rx="6" fill="rgba(167, 139, 250, 0.2)" stroke="#a78bfa"/>
+                <text x="190" y="147" fill="#a78bfa" font-size="11" font-weight="bold" text-anchor="middle">FLAME 5023 頂點 Mesh</text>
+              </svg>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "08",
+        label: "08. Blendshapes 動作基底",
+        sub: "ARKit 52 維工業標準",
+        cluster: "reps",
+        x: 930,
+        y: 380,
+        r: 28,
+        color: "#a78bfa",
+        badge: "badge-reps",
+        clusterName: "幾何表徵層",
+        title: "🎛️ 08. 工業級輕量標準：ARKit 52 FACS 動作基底",
+        subtitle: "直通遊戲引擎（Unity / Unreal Engine）與行動 VR 設備的黃金法則",
+        contentHtml: `
+          <div class="content-grid-2">
+            <div class="text-column">
+              <h4>🎛️ 線性混合模型 (Linear Blendshapes)</h4>
+              <p>$$V = V_0 + \sum_{k=1}^{52} w_k \cdot \Delta V_k, \quad w_k \in [0, 1]$$</p>
+
+              <h4>🚀 工業界為何鍾愛 Blendshapes？</h4>
+              <ul>
+                <li><strong>極致輕量化</strong>：每幀僅需傳輸 52 個純量權重（頻寬只需 ~6 KB/s），行動端算力消耗微乎其微。</li>
+                <li><strong>遊戲引擎原生相容</strong>：Unity, Unreal Engine, MetaHuman 或 Live Link 開箱即用，無需複雜的神經光柵化。</li>
+                <li><strong>可控性極佳</strong>：動畫師可直接在 3ds Max / Maya 手動覆蓋特定權重微調。</li>
+              </ul>
+
+              <div class="highlight-card">
+                <strong>權衡取捨：</strong> 線性疊加無法表現高階皮膚肌肉非線性滑動皺褶，對於好萊塢影視級超寫實特寫略有不足。
+              </div>
+            </div>
+
+            <div class="schematic-card">
+              <div class="schematic-title">🕹️ FACS 52 動作單元動態合成</div>
+              <svg viewBox="0 0 380 200">
+                <rect x="30" y="30" width="100" height="30" rx="4" fill="rgba(255,255,255,0.05)" stroke="#38bdf8"/>
+                <text x="80" y="50" fill="#38bdf8" font-size="9" text-anchor="middle">jawOpen: 0.85</text>
+
+                <rect x="30" y="70" width="100" height="30" rx="4" fill="rgba(255,255,255,0.05)" stroke="#f472b6"/>
+                <text x="80" y="90" fill="#f472b6" font-size="9" text-anchor="middle">mouthSmile_L: 0.60</text>
+
+                <rect x="30" y="110" width="100" height="30" rx="4" fill="rgba(255,255,255,0.05)" stroke="#34d399"/>
+                <text x="80" y="130" fill="#34d399" font-size="9" text-anchor="middle">eyeBlink_R: 0.40</text>
+
+                <path d="M 140 85 L 190 85" stroke="#a78bfa" stroke-width="2" marker-end="url(#arrow-purple)"/>
+                <rect x="190" y="55" width="160" height="60" rx="6" fill="rgba(167, 139, 250, 0.2)" stroke="#a78bfa"/>
+                <text x="270" y="82" fill="#a78bfa" font-size="10" font-weight="bold" text-anchor="middle">即時驅動遊戲角色</text>
+                <text x="270" y="98" fill="#fff" font-size="8.5" text-anchor="middle">(Unity / Unreal / WebGL)</text>
+              </svg>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "09",
+        label: "09. 3DGS 高斯輻射場",
+        sub: "顯式點雲超速光柵化",
+        cluster: "reps",
+        x: 930,
+        y: 520,
+        r: 28,
+        color: "#a78bfa",
+        badge: "badge-reps",
+        clusterName: "幾何表徵層",
+        title: "🔮 09. 神經渲染黑科技：3D Gaussian Splatting (3DGS)",
+        subtitle: "告別 NeRF 算力黑洞，幾何與照片級貼圖合一的顯式表徵",
+        contentHtml: `
+          <div class="content-grid-2">
+            <div class="text-column">
+              <h4>🔮 3D 高斯核心數學模型</h4>
+              <p>$$G(x) = \exp\left(-\frac{1}{2}(x - \mu)^T \Sigma^{-1} (x - \mu)\right), \quad \Sigma = R S S^T R^T$$</p>
+
+              <h4>⚡ 3DGS 顛覆性優勢</h4>
+              <ul>
+                <li><strong>顯式點雲投射</strong>：直接將三維橢球微元投射至螢幕 2D 像素，避開了 NeRF 繁重的射線採樣累積。</li>
+                <li><strong>幀率狂飆至 69~80 FPS</strong>：即使在單張 RTX 3090/4090 即可實現 1080P 超流暢多視角推論。</li>
+                <li><strong>微觀細節栩栩如生</strong>：原生自帶舌頭、牙齒高光與細碎髮絲，徹底超越純網格拓撲。</li>
+              </ul>
+
+              <div class="highlight-card">
+                <strong>挑戰與攻防：</strong> 臉部動畫需控制高斯球位移（Deformation Field），必須配合正交三平面（Triplane）約束防止高頻噪點閃爍。
+              </div>
+            </div>
+
+            <div class="schematic-card">
+              <div class="schematic-title">🪐 3D 高斯橢球光柵化至螢幕像素</div>
+              <svg viewBox="0 0 380 200">
+                <ellipse cx="80" cy="90" rx="35" ry="20" fill="rgba(167, 139, 250, 0.4)" stroke="#a78bfa" transform="rotate(-15 80 90)"/>
+                <ellipse cx="140" cy="60" rx="25" ry="15" fill="rgba(56, 189, 248, 0.4)" stroke="#38bdf8" transform="rotate(30 140 60)"/>
+                <ellipse cx="130" cy="130" rx="30" ry="18" fill="rgba(244, 114, 182, 0.4)" stroke="#f472b6" transform="rotate(10 130 130)"/>
+                <text x="110" y="175" fill="#a78bfa" font-size="9" text-anchor="middle">3D 高斯橢球 (μ, Σ, sh, α)</text>
+
+                <path d="M 180 90 L 230 90" stroke="#34d399" stroke-width="2" marker-end="url(#arrow-lime)"/>
+                <text x="205" y="80" fill="#34d399" font-size="8">快速光柵化</text>
+
+                <rect x="240" y="45" width="110" height="90" rx="4" fill="rgba(255,255,255,0.04)" stroke="#34d399"/>
+                <circle cx="270" cy="80" r="12" fill="#38bdf8" opacity="0.6"/>
+                <circle cx="295" cy="95" r="16" fill="#f472b6" opacity="0.6"/>
+                <text x="295" y="150" fill="#34d399" font-size="9" text-anchor="middle">2D 寫實照片級像素</text>
+              </svg>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "10",
+        label: "10. 評測指標體系",
+        sub: "LVE / FVE / SyncNet",
+        cluster: "metrics",
+        x: 270,
+        y: 270,
+        r: 28,
+        color: "#34d399",
+        badge: "badge-metrics",
+        clusterName: "評測基準層",
+        title: "📊 10. 學術評測尺標：幾何、時序動態與視聽同步五維體系",
+        subtitle: "如何以客觀數值杜絕主觀臆測，全方位檢驗 3D 臉部動畫",
+        contentHtml: `
+          <div class="content-grid-2">
+            <div class="text-column">
+              <h4>📏 五大核心評測維度</h4>
+              <ul>
+                <li><strong>LVE (Lip Vertex Error) ↓</strong>：唇部頂點最大與平均誤差（mm），衡量發音口型與咬字精確度。</li>
+                <li><strong>FVE (Face Vertex Error) ↓</strong>：全臉 3D 幾何誤差，衡量人臉整體外觀保真度。</li>
+                <li><strong>EVE (Emotional Vertex Error) ↓</strong>：眉心、額頭等上半臉情感區域專屬誤差。</li>
+                <li><strong>FDD (Facial Dynamics Deviation) ↓</strong>：速度與加速度時序偏差，衡量動作是否平滑自然、杜絕面癱抽搐。</li>
+                <li><strong>SyncNet Confidence ↑</strong>：聽視覺語義唇同步置信度評分（通常 > 6.0 為優良）。</li>
+              </ul>
+            </div>
+
+            <div class="schematic-card">
+              <div class="schematic-title">🎯 臉部熱力評估分區示意圖</div>
+              <svg viewBox="0 0 380 200">
+                <circle cx="190" cy="100" r="75" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+                
+                <!-- Upper Face EVE -->
+                <rect x="145" y="55" width="90" height="30" rx="4" fill="rgba(56, 189, 248, 0.25)" stroke="#38bdf8"/>
+                <text x="190" y="74" fill="#38bdf8" font-size="9" font-weight="bold" text-anchor="middle">上半臉 EVE 評估區</text>
+
+                <!-- Lip LVE -->
+                <ellipse cx="190" cy="130" rx="35" ry="16" fill="rgba(244, 114, 182, 0.3)" stroke="#f472b6"/>
+                <text x="190" y="134" fill="#f472b6" font-size="9" font-weight="bold" text-anchor="middle">唇部 LVE 評估區</text>
+
+                <!-- SyncNet & FDD badges -->
+                <rect x="20" y="15" width="95" height="26" rx="4" fill="rgba(52, 211, 153, 0.15)" stroke="#34d399"/>
+                <text x="67" y="32" fill="#34d399" font-size="8.5" text-anchor="middle">SyncNet: 視聽同步</text>
+
+                <rect x="265" y="15" width="95" height="26" rx="4" fill="rgba(251, 191, 36, 0.15)" stroke="#fbbf24"/>
+                <text x="312" y="32" fill="#fbbf24" font-size="8.5" text-anchor="middle">FDD: 動態加速度</text>
+              </svg>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "11",
+        label: "11. 綜合大比拚",
+        sub: "四大頂會頂刊對決",
+        cluster: "metrics",
+        x: 270,
+        y: 450,
+        r: 30,
+        color: "#34d399",
+        badge: "badge-metrics",
+        clusterName: "評測基準層",
+        title: "🏆 11. 巔峰對決：四大頂會頂刊模型全維度實測大矩陣",
+        subtitle: "性能、速度、參數量與落地場景之全維客觀比拚",
+        contentHtml: `
+          <div style="overflow-x: auto;">
+            <table class="styled-table">
+              <thead>
+                <tr>
+                  <th>評比維度 / 指標</th>
+                  <th>LG-LDM (2024)</th>
+                  <th>DiffusionTalker (2025)</th>
+                  <th>RefFace (2025)</th>
+                  <th>EmoPoseFace (2026)</th>
+                  <th>ESGaussianFace (2026)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>發表會刊 (Venue)</strong></td>
+                  <td>IEEE TVCG 2024 頂刊</td>
+                  <td>IEEE ICME 2025</td>
+                  <td>AIAHPC 2025</td>
+                  <td>IEEE TVCG 2026 頂刊</td>
+                  <td>IEEE TVCG 2026 頂刊</td>
+                </tr>
+                <tr>
+                  <td><strong>核心範式</strong></td>
+                  <td>局部-全局擴散 + EVQ-VAE</td>
+                  <td>3 步蒸餾擴散</td>
+                  <td>時空注意力擴散</td>
+                  <td>雙分支潛在擴散 (LDM)</td>
+                  <td>3DGS 神經渲染</td>
+                </tr>
+                <tr>
+                  <td><strong>輸出表徵形式</strong></td>
+                  <td>FLAME 5023 頂點 Mesh</td>
+                  <td>ARKit 52 Blendshapes</td>
+                  <td>FLAME 5023 頂點 Mesh</td>
+                  <td>FLAME Mesh + 3D Pose</td>
+                  <td>3D 高斯橢球點雲</td>
+                </tr>
+                <tr>
+                  <td><strong>LVE 唇形誤差 ↓</strong></td>
+                  <td>$2.02 \times 10^{-4}$ mm (MEAD)</td>
+                  <td>$1.81 \times 10^{-4}$ mm</td>
+                  <td>$5.97 \times 10^{-5}$ mm</td>
+                  <td class="highlight-cell">$5.71 \times 10^{-5}$ mm (SOTA)</td>
+                  <td>N/A (幾何無損寫實)</td>
+                </tr>
+                <tr>
+                  <td><strong>SyncNet 視聽同步 ↑</strong></td>
+                  <td>6.25</td>
+                  <td>6.12</td>
+                  <td>6.35</td>
+                  <td>6.58</td>
+                  <td class="highlight-cell">6.85 (SOTA)</td>
+                </tr>
+                <tr>
+                  <td><strong>推論速度 / FPS</strong></td>
+                  <td>8.36 FPS</td>
+                  <td class="highlight-cell">24+ FPS (41ms/幀)</td>
+                  <td>~12 FPS</td>
+                  <td>~15 FPS</td>
+                  <td class="highlight-cell">69 FPS (極致超速)</td>
+                </tr>
+                <tr>
+                  <td><strong>頭部姿態同步協同</strong></td>
+                  <td>無姿態 / 專注表情</td>
+                  <td>無姿態 / 靜態</td>
+                  <td>無姿態 / 靜態</td>
+                  <td class="highlight-cell">雙分支原生協同 (BA=0.81)</td>
+                  <td>自由視角旋轉</td>
+                </tr>
+                <tr>
+                  <td><strong>模型參數量大小</strong></td>
+                  <td>386 MB</td>
+                  <td class="highlight-cell">34 MB (極度緊湊)</td>
+                  <td>~180 MB</td>
+                  <td>~240 MB</td>
+                  <td>~150 MB (高斯模型)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        `
+      },
+      {
+        id: "12",
+        label: "12. 擬推薦決策樹",
+        sub: "業務落地最佳選型",
+        cluster: "scenarios",
+        x: 420,
+        y: 610,
+        r: 32,
+        color: "#f43f5e",
+        badge: "badge-scenarios",
+        clusterName: "擬推薦決策層",
+        title: "🎯 12. 擬推薦決策指針：你的業務場景該選哪一個模型？",
+        subtitle: "依據算力邊界、端側延遲與後製管線進行精準匹配",
+        contentHtml: `
+          <div class="content-grid-2">
+            <div class="text-column">
+              <h4>🎯 四大業務場景推薦推薦</h4>
+              <ul>
+                <li><strong>場景 A【行動端 / VR 社交 / 輕量遊戲】</strong>：<br>
+                  ★ <strong>首選推薦：DiffusionTalker (★★★★★)</strong><br>
+                  理由：3 步去噪僅需 41ms，模型僅 34MB，直通 Blendshapes 原生相容 Quest 3 與手機端。
+                </li>
+                <li><strong>場景 B【次世代 3A 遊戲 NPC / 高互動虛擬人】</strong>：<br>
+                  ★ <strong>首選推薦：EmoPoseFace (★★★★★)</strong><br>
+                  理由：徹底告別面癱與木偶感，雙分支 GRU 帶來自然說話搖頭晃腦與情感微調。
+                </li>
+                <li><strong>場景 C【影視級 3D 動畫師後製綁定】</strong>：<br>
+                  ★ <strong>首選推薦：RefFace (★★★★☆)</strong><br>
+                  理由：透過稀疏特徵點解耦身分與表情，方便綁定自有高精人臉骨骼。
+                </li>
+                <li><strong>場景 D【超寫實 AI 數位人直播 / 虛擬網紅】</strong>：<br>
+                  ★ <strong>首選推薦：ESGaussianFace (★★★★★)</strong><br>
+                  理由：69 FPS 實時照片級光影，牙齒與髮絲無懈可擊，支援風格化切換。
+                </li>
+              </ul>
+            </div>
+
+            <div class="schematic-card">
+              <div class="schematic-title">🌳 快速決策指針路徑</div>
+              <svg viewBox="0 0 380 230">
+                <rect x="110" y="15" width="160" height="30" rx="6" fill="rgba(56, 189, 248, 0.2)" stroke="#38bdf8"/>
+                <text x="190" y="34" fill="#38bdf8" font-size="10" font-weight="bold" text-anchor="middle">輸出格式需幾何還是視訊？</text>
+
+                <path d="M 140 45 L 80 80" stroke="#a78bfa" stroke-width="1.5"/>
+                <rect x="20" y="80" width="130" height="30" rx="4" fill="rgba(167, 139, 250, 0.15)" stroke="#a78bfa"/>
+                <text x="85" y="99" fill="#a78bfa" font-size="9" text-anchor="middle">幾何網格 (Mesh/FACS)</text>
+
+                <path d="M 240 45 L 300 80" stroke="#f472b6" stroke-width="1.5"/>
+                <rect x="235" y="80" width="130" height="30" rx="4" fill="rgba(244, 114, 182, 0.15)" stroke="#f472b6"/>
+                <text x="300" y="99" fill="#f472b6" font-size="9" text-anchor="middle">寫實視訊 (3DGS)</text>
+
+                <path d="M 50 110 L 50 145" stroke="#34d399" stroke-width="1.5"/>
+                <rect x="10" y="145" width="90" height="30" rx="4" fill="rgba(52, 211, 153, 0.2)" stroke="#34d399"/>
+                <text x="55" y="164" fill="#34d399" font-size="8.5" font-weight="bold" text-anchor="middle">DiffusionTalker</text>
+
+                <path d="M 120 110 L 120 145" stroke="#fbbf24" stroke-width="1.5"/>
+                <rect x="95" y="145" width="85" height="30" rx="4" fill="rgba(251, 191, 36, 0.2)" stroke="#fbbf24"/>
+                <text x="137" y="164" fill="#fbbf24" font-size="8.5" font-weight="bold" text-anchor="middle">EmoPoseFace</text>
+
+                <path d="M 300 110 L 300 145" stroke="#f472b6" stroke-width="1.5"/>
+                <rect x="245" y="145" width="110" height="30" rx="4" fill="rgba(244, 114, 182, 0.25)" stroke="#f472b6"/>
+                <text x="300" y="164" fill="#f472b6" font-size="8.5" font-weight="bold" text-anchor="middle">ESGaussianFace</text>
+              </svg>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "13",
+        label: "13. 落地避坑指南",
+        sub: "工程極限與防禦策略",
+        cluster: "scenarios",
+        x: 780,
+        y: 610,
+        r: 30,
+        color: "#f43f5e",
+        badge: "badge-scenarios",
+        clusterName: "擬推薦決策層",
+        title: "⚠️ 13. 落地避坑手冊：工程化四大概率踩坑陷阱與防禦策略",
+        subtitle: "學術論文沒告訴你的工程極限與上線防禦策略",
+        contentHtml: `
+          <div class="content-grid-2">
+            <div class="text-column">
+              <h4>⚠️ 四大工程陷阱與避坑策略</h4>
+              <ul>
+                <li><strong>坑 1：擴散模型推論延遲累積 (Sampling Latency)</strong><br>
+                  • <em>陷阱</em>：自回歸或 DDPM 50 步需要數百毫秒，導致音畫不同步。<br>
+                  • <em>防禦</em>：務必導入<strong>步數折半蒸餾 (Distillation)</strong> 或改用流匹配 (Flow Matching)。
+                </li>
+                <li><strong>坑 2：身份特徵漂移 (Identity Bleeding)</strong><br>
+                  • <em>陷阱</em>：音訊洩漏發音人身份，換了音訊人臉外觀隨之變形。<br>
+                  • <em>防禦</em>：引入對比學習對音訊解耦，或如 RefFace 引入獨立幾何特徵點。
+                </li>
+                <li><strong>坑 3：3DGS 動態高斯球閃爍 (Temporal Inconsistency)</strong><br>
+                  • <em>陷阱</em>：單幀光柵化微小位移產生高頻雪花噪點。<br>
+                  • <em>防禦</em>：引入 Triplane 規範空間變形場，施加時序速度平滑損失。
+                </li>
+                <li><strong>坑 4：音頻編碼器冷啟動過重</strong><br>
+                  • <em>防禦</em>：預先蒸餾 Wav2Vec2 為小型卷積網絡，降低啟動載入延遲。
+                </li>
+              </ul>
+            </div>
+
+            <div class="schematic-card">
+              <div class="schematic-title">🛡️ 陷阱 vs 防禦工程矩陣</div>
+              <svg viewBox="0 0 380 200">
+                <rect x="20" y="20" width="150" height="36" rx="4" fill="rgba(244, 63, 94, 0.15)" stroke="#f43f5e"/>
+                <text x="95" y="42" fill="#f43f5e" font-size="9.5" text-anchor="middle">⚡ 陷阱：去噪延遲高</text>
+
+                <path d="M 170 38 L 210 38" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-lime)"/>
+                <rect x="210" y="20" width="150" height="36" rx="4" fill="rgba(52, 211, 153, 0.15)" stroke="#34d399"/>
+                <text x="285" y="42" fill="#34d399" font-size="9.5" text-anchor="middle">🛡️ 步數折半蒸餾</text>
+
+                <rect x="20" y="80" width="150" height="36" rx="4" fill="rgba(244, 63, 94, 0.15)" stroke="#f43f5e"/>
+                <text x="95" y="102" fill="#f43f5e" font-size="9.5" text-anchor="middle">⚡ 陷阱：身分漂移失真</text>
+
+                <path d="M 170 98 L 210 98" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-lime)"/>
+                <rect x="210" y="80" width="150" height="36" rx="4" fill="rgba(52, 211, 153, 0.15)" stroke="#34d399"/>
+                <text x="285" y="102" fill="#34d399" font-size="9.5" text-anchor="middle">🛡️ 獨立特徵點約束</text>
+
+                <rect x="20" y="140" width="150" height="36" rx="4" fill="rgba(244, 63, 94, 0.15)" stroke="#f472b6"/>
+                <text x="95" y="162" fill="#f472b6" font-size="9.5" text-anchor="middle">⚡ 陷阱：3DGS 雪花跳變</text>
+
+                <path d="M 170 158 L 210 158" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-lime)"/>
+                <rect x="210" y="140" width="150" height="36" rx="4" fill="rgba(52, 211, 153, 0.15)" stroke="#34d399"/>
+                <text x="285" y="162" fill="#34d399" font-size="9.5" text-anchor="middle">🛡️ Triplane 空間正則化</text>
+              </svg>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "14",
+        label: "14. 未來前沿浪潮",
+        sub: "全身協同與具身 AI",
+        cluster: "scenarios",
+        x: 600,
+        y: 730,
+        r: 32,
+        color: "#f43f5e",
+        badge: "badge-scenarios",
+        clusterName: "擬推薦決策層",
+        title: "🚀 14. 未來前沿浪潮：多模態大模型與全身共發動態",
+        subtitle: "從「語音驅動嘴型小模型」躍遷至「具身智慧數位人大腦」",
+        contentHtml: `
+          <div class="content-grid-2">
+            <div class="text-column">
+              <h4>🌊 三大新一代技術浪潮</h4>
+              <ul>
+                <li><strong>浪潮 1：Co-Speech 全身手勢與骨架協同</strong>：單純臉部動畫已無法滿足沉浸感，需整合手勢 (Gestures) 與軀幹微動作（如 BEAT 數據集生態）。</li>
+                <li><strong>浪潮 2：端到端多模態大模型 (Omni / VLM) 統一架構</strong>：捨棄分立的 Wav2Vec2/HuBERT 串接，改由類 GPT-4o 端到端自回歸直接輸出 3DGS 控制參數。</li>
+                <li><strong>浪潮 3：4D 高斯時空連續神經場 (4D-GS)</strong>：將時間維度編碼進神經場，徹底解決舌頭與口腔暗部光影連續性。</li>
+              </ul>
+
+              <div class="highlight-card">
+                <strong>結論與前瞻：</strong> 3D 臉部動畫已不再是孤立的口型對齊問題，而是具身智慧（Embodied AI）數位人不可或缺的交互表徵！
+              </div>
+            </div>
+
+            <div class="schematic-card">
+              <div class="schematic-title">🤖 具身智慧數位人統一神經大腦</div>
+              <svg viewBox="0 0 380 200">
+                <rect x="110" y="20" width="160" height="35" rx="6" fill="rgba(56, 189, 248, 0.2)" stroke="#38bdf8"/>
+                <text x="190" y="42" fill="#38bdf8" font-size="10" font-weight="bold" text-anchor="middle">多模態大模型 (Omni VLM)</text>
+
+                <path d="M 140 55 L 70 100" stroke="#f472b6" stroke-width="1.5" marker-end="url(#arrow-pink)"/>
+                <rect x="20" y="100" width="100" height="40" rx="4" fill="rgba(244, 114, 182, 0.15)" stroke="#f472b6"/>
+                <text x="70" y="125" fill="#f472b6" font-size="9" text-anchor="middle">臉部微表情 (3DGS)</text>
+
+                <path d="M 190 55 L 190 100" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrow-amber)"/>
+                <rect x="140" y="100" width="100" height="40" rx="4" fill="rgba(251, 191, 36, 0.15)" stroke="#fbbf24"/>
+                <text x="190" y="125" fill="#fbbf24" font-size="9" text-anchor="middle">手勢與軀幹骨架</text>
+
+                <path d="M 240 55 L 310 100" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-lime)"/>
+                <rect x="260" y="100" width="100" height="40" rx="4" fill="rgba(52, 211, 153, 0.15)" stroke="#34d399"/>
+                <text x="310" y="125" fill="#34d399" font-size="9" text-anchor="middle">情感語意語調</text>
+
+                <rect x="80" y="160" width="220" height="30" rx="6" fill="rgba(255,255,255,0.06)" stroke="#a78bfa"/>
+                <text x="190" y="180" fill="#a78bfa" font-size="10" font-weight="bold" text-anchor="middle">超逼真具身互動虛擬生命體</text>
+              </svg>
+            </div>
+          </div>
+        `
+      }
+    ];
+
+    /* Directed Graph Edges with Semantic Relationship Labels */
+    const GRAPH_EDGES = [
+      { source: "00", target: "01", label: "輸入", color: "#fbbf24" },
+      { source: "00", target: "02", label: "外部引導", color: "#fbbf24" },
+      { source: "00", target: "03", label: "演算法", color: "#f472b6" },
+      { source: "00", target: "07", label: "表徵拓撲", color: "#a78bfa" },
+      { source: "00", target: "12", label: "落地指針", color: "#f43f5e" },
+      
+      { source: "01", target: "03", label: "蒸餾驅動", color: "#f472b6" },
+      { source: "01", target: "04", label: "HuBERT 驅動", color: "#f472b6" },
+      { source: "01", target: "06", label: "DeepSpeech", color: "#f472b6" },
+      { source: "01", target: "02", label: "多模態協同", color: "#fbbf24" },
+
+      { source: "02", target: "04", label: "Landmarks 引導", color: "#f472b6" },
+      { source: "02", target: "05", label: "Pose/Emotion 解耦", color: "#f472b6" },
+
+      { source: "03", target: "08", label: "輸出 FACS", color: "#a78bfa" },
+      { source: "03", target: "12", label: "VR 推薦", color: "#f43f5e" },
+      { source: "03", target: "04", label: "演進", color: "#f472b6" },
+
+      { source: "04", target: "07", label: "輸出 FLAME", color: "#a78bfa" },
+      { source: "04", target: "05", label: "演進為雙分支", color: "#f472b6" },
+      { source: "04", target: "11", label: "評測", color: "#34d399" },
+
+      { source: "05", target: "07", label: "輸出 FLAME+Pose", color: "#a78bfa" },
+      { source: "05", target: "06", label: "範式躍遷", color: "#f472b6" },
+      { source: "05", target: "12", label: "NPC 推薦", color: "#f43f5e" },
+      { source: "05", target: "11", label: "評測 SOTA", color: "#34d399" },
+
+      { source: "06", target: "09", label: "輸出 3DGS", color: "#a78bfa" },
+      { source: "06", target: "11", label: "評測 69 FPS", color: "#34d399" },
+      { source: "06", target: "12", label: "超寫實推薦", color: "#f43f5e" },
+
+      { source: "07", target: "10", label: "LVE/FVE 尺標", color: "#34d399" },
+      { source: "07", target: "08", label: "降維對照", color: "#a78bfa" },
+      { source: "08", target: "12", label: "遊戲引擎推薦", color: "#f43f5e" },
+      { source: "09", target: "10", label: "SyncNet 評估", color: "#34d399" },
+
+      { source: "10", target: "11", label: "指標矩陣", color: "#34d399" },
+      { source: "11", target: "12", label: "決策輸入", color: "#f43f5e" },
+      { source: "12", target: "13", label: "避坑防禦", color: "#f43f5e" },
+      { source: "13", target: "14", label: "未來浪潮", color: "#f43f5e" },
+      { source: "14", target: "00", label: "閉環回到核心", color: "#38bdf8" }
+    ];
+
+    /* ============================================================
+       APPLICATION LOGIC & RENDER ENGINE
+       ============================================================ */
+    let currentSlideIndex = 0;
+    let currentView = 'graph'; // 'graph' or 'slide'
+    let zoomLevel = 1.0;
+    let panX = 0, panY = 0;
+    let isDragging = false;
+    let startX, startY;
+
+    // DOM Elements
+    const graphSvg = document.getElementById('graph-svg');
+    const graphRoot = document.getElementById('graph-root');
+    const edgesLayer = document.getElementById('edges-layer');
+    const nodesLayer = document.getElementById('nodes-layer');
+    const slideModal = document.getElementById('slide-modal');
+    const modalCardBody = document.getElementById('modal-card-body');
+    const modalInbound = document.getElementById('modal-inbound-edges');
+    const modalOutbound = document.getElementById('modal-outbound-edges');
+    const modalNodeId = document.getElementById('modal-node-id');
+    const modalClusterBadge = document.getElementById('modal-cluster-badge');
+    const modalCounter = document.getElementById('modal-counter');
+
+    // Build Graph SVG Nodes and Edges
+    function renderGraph() {
+      // 1. Draw Edges
+      edgesLayer.innerHTML = '';
+      GRAPH_EDGES.forEach((edge, idx) => {
+        const sNode = GRAPH_NODES.find(n => n.id === edge.source);
+        const tNode = GRAPH_NODES.find(n => n.id === edge.target);
+        if (!sNode || !tNode) return;
+
+        // Calculate offset to stop at node circle edge
+        const dx = tNode.x - sNode.x;
+        const dy = tNode.y - sNode.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist === 0) return;
+
+        const startX = sNode.x + (dx / dist) * sNode.r;
+        const startY = sNode.y + (dy / dist) * sNode.r;
+        const endX = tNode.x - (dx / dist) * (tNode.r + 4);
+        const endY = tNode.y - (dy / dist) * (tNode.r + 4);
+
+        const edgeEl = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        edgeEl.setAttribute("d", `M ${startX} ${startY} L ${endX} ${endY}`);
+        edgeEl.setAttribute("class", "graph-edge");
+        edgeEl.setAttribute("id", `edge-${edge.source}-${edge.target}`);
+        edgeEl.setAttribute("stroke", edge.color || "rgba(56,189,248,0.3)");
+        
+        let marker = "url(#arrow-cyan)";
+        if (edge.color === "#fbbf24") marker = "url(#arrow-amber)";
+        else if (edge.color === "#f472b6") marker = "url(#arrow-pink)";
+        else if (edge.color === "#34d399") marker = "url(#arrow-lime)";
+        else if (edge.color === "#a78bfa") marker = "url(#arrow-purple)";
+        edgeEl.setAttribute("marker-end", marker);
+
+        edgesLayer.appendChild(edgeEl);
+
+        // Edge label at midpoint
+        const midX = (startX + endX) / 2;
+        const midY = (startY + endY) / 2;
+        const labelEl = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        labelEl.setAttribute("x", midX);
+        labelEl.setAttribute("y", midY - 3);
+        labelEl.setAttribute("class", "edge-label");
+        labelEl.textContent = edge.label || "";
+        edgesLayer.appendChild(labelEl);
+      });
+
+      // 2. Draw Nodes
+      nodesLayer.innerHTML = '';
+      GRAPH_NODES.forEach((node, idx) => {
+        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        g.setAttribute("class", "graph-node");
+        g.setAttribute("id", `node-${node.id}`);
+        g.setAttribute("transform", `translate(${node.x}, ${node.y})`);
+        g.onclick = () => openSlideModal(idx);
+
+        // Outer Glow Circle
+        const circleOuter = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circleOuter.setAttribute("r", node.r + 4);
+        circleOuter.setAttribute("fill", "none");
+        circleOuter.setAttribute("stroke", node.color);
+        circleOuter.setAttribute("stroke-width", "1.5");
+        circleOuter.setAttribute("opacity", "0.4");
+        circleOuter.setAttribute("stroke-dasharray", "4,3");
+
+        // Main Node Circle
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("r", node.r);
+        circle.setAttribute("fill", "#151b2e");
+        circle.setAttribute("stroke", node.color);
+        circle.setAttribute("stroke-width", "2.5");
+
+        // Label Text
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("y", -3);
+        text.setAttribute("fill", "#fff");
+        text.setAttribute("font-size", node.r > 32 ? "10.5px" : "9.5px");
+        text.setAttribute("font-weight", "800");
+        text.textContent = node.label.split(". ")[1] || node.label;
+
+        // Subtitle Text
+        const subText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        subText.setAttribute("text-anchor", "middle");
+        subText.setAttribute("y", 12);
+        subText.setAttribute("fill", node.color);
+        subText.setAttribute("font-size", "8px");
+        subText.setAttribute("font-family", "var(--font-code)");
+        subText.textContent = node.sub;
+
+        g.appendChild(circleOuter);
+        g.appendChild(circle);
+        g.appendChild(text);
+        g.appendChild(subText);
+        nodesLayer.appendChild(g);
+      });
+    }
+
+    // Open Slide Modal
+    function openSlideModal(nodeIndex) {
+      if (nodeIndex < 0 || nodeIndex >= GRAPH_NODES.length) return;
+      currentSlideIndex = nodeIndex;
+      const node = GRAPH_NODES[nodeIndex];
+
+      modalNodeId.textContent = `NODE ${node.id}`;
+      modalClusterBadge.textContent = node.clusterName;
+      modalClusterBadge.className = `card-cluster-badge ${node.badge}`;
+      modalCounter.textContent = `${nodeIndex + 1} / ${GRAPH_NODES.length}`;
+
+      // Content Render
+      modalCardBody.innerHTML = `
+        <div class="slide-title-bar">
+          <h2 class="slide-title">${node.title}</h2>
+          <div class="slide-subtitle">${node.subtitle}</div>
+        </div>
+        ${node.contentHtml}
+      `;
+
+      // Render Math
+      if (window.renderMathInElement) {
+        renderMathInElement(modalCardBody, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ]
+        });
+      }
+
+      // Inbound Edges Jump Pills
+      modalInbound.innerHTML = '';
+      const inEdges = GRAPH_EDGES.filter(e => e.target === node.id);
+      if (inEdges.length === 0) {
+        modalInbound.innerHTML = '<span style="font-size:0.75rem; color:#64748b;">(起點無前序)</span>';
+      } else {
+        inEdges.forEach(e => {
+          const srcIdx = GRAPH_NODES.findIndex(n => n.id === e.source);
+          if (srcIdx !== -1) {
+            const btn = document.createElement('button');
+            btn.className = 'edge-jump-pill';
+            btn.innerHTML = `⬅️ [${GRAPH_NODES[srcIdx].label}] <small style="opacity:0.75;">(${e.label})</small>`;
+            btn.onclick = () => openSlideModal(srcIdx);
+            modalInbound.appendChild(btn);
+          }
+        });
+      }
+
+      // Outbound Edges Jump Pills
+      modalOutbound.innerHTML = '';
+      const outEdges = GRAPH_EDGES.filter(e => e.source === node.id);
+      if (outEdges.length === 0) {
+        modalOutbound.innerHTML = '<span style="font-size:0.75rem; color:#64748b;">(無後續分支)</span>';
+      } else {
+        outEdges.forEach(e => {
+          const tgtIdx = GRAPH_NODES.findIndex(n => n.id === e.target);
+          if (tgtIdx !== -1) {
+            const btn = document.createElement('button');
+            let pillClass = 'edge-jump-pill';
+            if (e.color === '#f472b6') pillClass += ' pill-pink';
+            else if (e.color === '#fbbf24') pillClass += ' pill-amber';
+            else if (e.color === '#34d399') pillClass += ' pill-lime';
+            else if (e.color === '#a78bfa') pillClass += ' pill-purple';
+            btn.className = pillClass;
+            btn.innerHTML = `➡️ [${GRAPH_NODES[tgtIdx].label}] <small style="opacity:0.75;">(${e.label})</small>`;
+            btn.onclick = () => openSlideModal(tgtIdx);
+            modalOutbound.appendChild(btn);
+          }
+        });
+      }
+
+      slideModal.classList.add('open');
+      currentView = 'slide';
+      document.getElementById('btn-mode-graph').classList.remove('active');
+      document.getElementById('btn-mode-slide').classList.add('active');
+    }
+
+    // Close Slide Modal
+    function closeSlideModal() {
+      slideModal.classList.remove('open');
+      currentView = 'graph';
+      document.getElementById('btn-mode-slide').classList.remove('active');
+      document.getElementById('btn-mode-graph').classList.add('active');
+    }
+
+    // Switch View from top bar
+    function switchView(view) {
+      if (view === 'graph') {
+        closeSlideModal();
+      } else {
+        openSlideModal(currentSlideIndex);
+      }
+    }
+
+    // Linear Navigation
+    function navigateLinear(step) {
+      let nextIdx = currentSlideIndex + step;
+      if (nextIdx < 0) nextIdx = GRAPH_NODES.length - 1;
+      if (nextIdx >= GRAPH_NODES.length) nextIdx = 0;
+      openSlideModal(nextIdx);
+    }
+
+    // Graph Pan and Zoom
+    function updateGraphTransform() {
+      graphRoot.setAttribute("transform", `translate(${panX}, ${panY}) scale(${zoomLevel})`);
+    }
+
+    function zoomGraph(factor) {
+      zoomLevel *= factor;
+      zoomLevel = Math.max(0.6, Math.min(zoomLevel, 2.8));
+      updateGraphTransform();
+    }
+
+    function resetGraphZoom() {
+      zoomLevel = 1.0;
+      panX = 0;
+      panY = 0;
+      updateGraphTransform();
+    }
+
+    // Canvas Drag Handlers
+    const canvasContainer = document.getElementById('graph-canvas-container');
+    canvasContainer.addEventListener('mousedown', (e) => {
+      if (e.target.closest('.graph-hud') || e.target.closest('.graph-controls')) return;
+      isDragging = true;
+      startX = e.clientX - panX;
+      startY = e.clientY - panY;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      panX = e.clientX - startX;
+      panY = e.clientY - startY;
+      updateGraphTransform();
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    // Keyboard Shortcuts
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' || e.key === 'g' || e.key === 'G') {
+        if (currentView === 'slide') closeSlideModal();
+        else openSlideModal(currentSlideIndex);
+      } else if (e.key === 'ArrowRight' || e.key === 'Space') {
+        if (currentView === 'slide') navigateLinear(1);
+      } else if (e.key === 'ArrowLeft') {
+        if (currentView === 'slide') navigateLinear(-1);
+      }
+    });
+
+    // Initialize on Load
+    window.addEventListener('DOMContentLoaded', () => {
+      renderGraph();
+    });
+  </script>
+</body>
+</html>

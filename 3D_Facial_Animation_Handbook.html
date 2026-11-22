@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📖 3D 臉部動畫技術選型與前沿架構 · 圖文講義指南 💡</title>
+  <!-- KaTeX for crisp mathematical formulas -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <style>
+    :root {
+      --bg-dark: #0f1423;
+      --bg-surface: #151b2e;
+      --bg-card: rgba(21, 28, 48, 0.85);
+      --card-border: 1px solid rgba(56, 189, 248, 0.22);
+      
+      --cyan: #38bdf8;
+      --cyan-soft: rgba(56, 189, 248, 0.12);
+      --pink: #f472b6;
+      --pink-soft: rgba(244, 114, 182, 0.12);
+      --lime: #34d399;
+      --lime-soft: rgba(52, 211, 153, 0.12);
+      --amber: #fbbf24;
+      --amber-soft: rgba(251, 191, 36, 0.12);
+      --purple: #a78bfa;
+      --purple-soft: rgba(167, 139, 250, 0.12);
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-soft: #cbd5e1;
+      
+      --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", "Segoe UI Emoji", sans-serif;
+      --font-code: "Cascadia Code", "Consolas", "Courier New", monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(244, 114, 182, 0.03) 1px, transparent 1px);
+      background-size: 32px 32px;
+      color: var(--text-main);
+      font-family: var(--font-body);
+      line-height: 1.7;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Top Sticky Header */
+    .top-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: 56px;
+      background: rgba(15, 20, 35, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(56, 189, 248, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+    }
+
+    .brand-badge {
+      background: linear-gradient(135deg, var(--cyan), var(--pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .btn {
+      padding: 0.38rem 0.9rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(56, 189, 248, 0.3);
+      color: var(--text-soft);
+    }
+
+    .btn-outline:hover {
+      background: rgba(56, 189, 248, 0.15);
+      color: #fff;
+      border-color: var(--cyan);
+      transform: translateY(-1px);
+    }
+
+    .btn-pink {
+      background: rgba(244, 114, 182, 0.15);
+      border-color: rgba(244, 114, 182, 0.4);
+      color: var(--pink);
+    }
+
+    .btn-pink:hover {
+      background: var(--pink);
+      color: #000;
+      box-shadow: 0 0 12px rgba(244, 114, 182, 0.4);
+    }
+
+    /* Main Handout Layout */
+    .layout-container {
+      display: flex;
+      max-width: 1440px;
+      margin: 0 auto;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* Sidebar Navigation */
+    .sidebar {
+      width: 280px;
+      position: sticky;
+      top: 56px;
+      height: calc(100vh - 56px);
+      overflow-y: auto;
+      padding: 2rem 1.5rem;
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.86rem;
+      flex-shrink: 0;
+    }
+
+    .sidebar-title {
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 0.85rem;
+      padding-left: 0.5rem;
+    }
+
+    .toc-list {
+      list-style: none;
+    }
+
+    .toc-item {
+      margin-bottom: 0.35rem;
+    }
+
+    .toc-link {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 0.65rem;
+      border-radius: 0.4rem;
+      color: var(--text-soft);
+      text-decoration: none;
+      transition: all 0.2s;
+      font-weight: 600;
+      border-left: 2px solid transparent;
+    }
+
+    .toc-link:hover, .toc-link.active {
+      color: #fff;
+      background: rgba(56, 189, 248, 0.1);
+      border-left-color: var(--cyan);
+    }
+
+    /* Content Area */
+    .content-area {
+      flex: 1;
+      max-width: 980px;
+      padding: 2.5rem 3rem 5rem 3rem;
+      min-width: 0;
+    }
+
+    /* Typography */
+    h1 {
+      font-size: 2.35rem;
+      font-weight: 900;
+      line-height: 1.3;
+      margin-bottom: 0.8rem;
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      font-size: 1.65rem;
+      font-weight: 800;
+      margin-top: 2.8rem;
+      margin-bottom: 1.1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #fff;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-top: 1.6rem;
+      margin-bottom: 0.75rem;
+      color: var(--cyan);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    p {
+      margin-bottom: 1.1rem;
+      color: var(--text-soft);
+      font-size: 0.98rem;
+    }
+
+    ul, ol {
+      margin-bottom: 1.2rem;
+      padding-left: 1.5rem;
+      color: var(--text-soft);
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+
+    strong {
+      color: #fff;
+      font-weight: 700;
+    }
+
+    /* Recommendation Cards (擬推薦特色專用卡) */
+    .rec-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+      position: relative;
+    }
+
+    .rec-badge-corner {
+      position: absolute;
+      top: 1rem;
+      right: 1.2rem;
+      background: rgba(52, 211, 153, 0.15);
+      border: 1px solid var(--lime);
+      color: var(--lime);
+      font-size: 0.76rem;
+      font-weight: 800;
+      padding: 0.2rem 0.65rem;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .rec-rating {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.88rem;
+      color: var(--amber);
+      font-weight: 800;
+      margin-bottom: 0.75rem;
+    }
+
+    .target-audience-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px dashed rgba(56, 189, 248, 0.3);
+      border-radius: 0.5rem;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.15rem 0.55rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      margin-right: 0.35rem;
+    }
+
+    .tag-cyan { background: var(--cyan-soft); color: var(--cyan); border: 1px solid rgba(56, 189, 248, 0.3); }
+    .tag-pink { background: var(--pink-soft); color: var(--pink); border: 1px solid rgba(244, 114, 182, 0.3); }
+    .tag-lime { background: var(--lime-soft); color: var(--lime); border: 1px solid rgba(52, 211, 153, 0.3); }
+    .tag-amber { background: var(--amber-soft); color: var(--amber); border: 1px solid rgba(251, 191, 36, 0.3); }
+
+    /* Callouts / Warnings / Tips */
+    .callout {
+      border-left: 4px solid var(--cyan);
+      background: rgba(56, 189, 248, 0.07);
+      padding: 1rem 1.25rem;
+      border-radius: 0 0.5rem 0.5rem 0;
+      margin: 1.2rem 0;
+      font-size: 0.94rem;
+    }
+
+    .callout-title {
+      font-weight: 800;
+      color: var(--cyan);
+      margin-bottom: 0.35rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .callout-warning {
+      border-left-color: var(--amber);
+      background: rgba(251, 191, 36, 0.07);
+    }
+    .callout-warning .callout-title { color: var(--amber); }
+
+    .callout-success {
+      border-left-color: var(--lime);
+      background: rgba(52, 211, 153, 0.07);
+    }
+    .callout-success .callout-title { color: var(--lime); }
+
+    /* SVG Diagram Container */
+    .diagram-panel {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 0.65rem;
+      padding: 1.2rem;
+      margin: 1.2rem 0;
+      box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .diagram-panel svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .diagram-caption {
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 0.65rem;
+      font-weight: 600;
+    }
+
+    /* Comparison Table */
+    .table-responsive {
+      overflow-x: auto;
+      margin: 1.2rem 0;
+      border-radius: 0.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+      text-align: left;
+    }
+
+    th {
+      background: #1e2438;
+      padding: 0.75rem 1rem;
+      color: var(--cyan);
+      font-weight: 800;
+      border-bottom: 1.5px solid rgba(56, 189, 248, 0.35);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      color: var(--text-soft);
+      vertical-align: top;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .badge-sota {
+      color: var(--lime);
+      font-weight: 800;
+      font-family: var(--font-code);
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 2rem;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      background: #0b0f1a;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Sticky Header -->
+  <header class="top-header">
+    <div class="brand">
+      <span>📖</span>
+      <span class="brand-badge">3D FACIAL ANIMATION HANDBOOK</span>
+      <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 500;">· 擬推薦圖文精講</span>
+    </div>
+
+    <div class="header-actions">
+      <a href="../presentations/3D_Facial_Animation_Graph_Deck.html" class="btn btn-outline" style="border-color: var(--cyan); color: var(--cyan);">🕸️ 知識圖譜投影片 ↗</a>
+      <a href="../presentations/3D_Facial_Animation_Survey.html" class="btn btn-outline">🖥️ 切換至經典簡報 ↗</a>
+      <button class="btn btn-pink" onclick="window.print()">🖨️ 列印 / 另存為 PDF</button>
+    </div>
+  </header>
+
+  <div class="layout-container">
+
+    <!-- Sidebar Sticky Navigation -->
+    <nav class="sidebar">
+      <div class="sidebar-title">講義章節目錄</div>
+      <ul class="toc-list">
+        <li class="toc-item"><a href="#intro" class="toc-link">🌟 00. 講義前言與核心視角</a></li>
+        <li class="toc-item"><a href="#decision-tree" class="toc-link">🎯 01. 擬推薦決策樹指針</a></li>
+        <li class="toc-item"><a href="#diffusiontalker" class="toc-link">⚡ 02. DiffusionTalker 講義</a></li>
+        <li class="toc-item"><a href="#refface" class="toc-link">🛸 03. RefFace 講義</a></li>
+        <li class="toc-item"><a href="#emoposeface" class="toc-link">🤖 04. EmoPoseFace 講義</a></li>
+        <li class="toc-item"><a href="#lgldm" class="toc-link">🎭 05. LG-LDM 講義</a></li>
+        <li class="toc-item"><a href="#esgaussianface" class="toc-link">💖 06. ESGaussianFace 講義</a></li>
+        <li class="toc-item"><a href="#matrix" class="toc-link">📊 07. 橫向實戰選型大矩陣</a></li>
+        <li class="toc-item"><a href="#audio-advisory" class="toc-link">🔊 08. 聲學編碼器選型定論</a></li>
+        <li class="toc-item"><a href="#quiz" class="toc-link">💡 09. 思考題與實戰自我檢核</a></li>
+      </ul>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="content-area">
+
+      <!-- CHAPTER 0 -->
+      <section id="intro">
+        <span class="tag tag-pink">EXECUTIVE SUMMARY · 2026 最新前沿</span>
+        <h1>3D 臉部動畫前沿全景解析與技術選型推薦指南</h1>
+        <p style="font-size: 1.1rem; color: #cbd5e1; margin-top: 0.5rem;">
+          本講義以<strong>「業務場景擬推薦（Scenario-Driven Recommendation）」</strong>為出發點，打破單篇論文的隔裂視角，深度解讀 2025~2026 年四大學術里程碑工作（ICME 2025 · AIAHPC 2025 · IEEE TVCG 2026 頂刊），提供圖文並茂的架構解析、實測避坑預警與選型決策路徑。
+        </p>
+
+        <div class="callout callout-success">
+          <div class="callout-title">💡 講義研讀核心視角</div>
+          過去 3D 臉部動畫領域常面臨<strong>「均值回歸面癱（石雕臉）」</strong>、<strong>「頭部抖動抽搐（Jitter）」</strong>與<strong>「神經渲染延遲高（NeRF &lt; 1 FPS）」</strong>三大歷史痛點。當前學界已分化為兩大落地流派：<strong>幾何網格流派（Mesh / Blendshapes）</strong>與<strong>顯式神經渲染流派（3DGS）</strong>。選擇技術時，絕不能只看論文指標的高低，而必須依據<strong>算力邊界、端側延遲與後製管線</strong>進行精準匹配。
+        </div>
+      </section>
+
+      <!-- CHAPTER 1: DECISION TREE -->
+      <section id="decision-tree">
+        <h2>🎯 01. 擬推薦決策樹：你的業務場景該選哪一個模型？</h2>
+        <p>如果你正在規劃 3D 虛擬人、遊戲 NPC、VR 社交或 AI 視訊生成系統，請依據下方**視覺化決策指針**快速鎖定目標方案：</p>
+
+        <!-- Decision Tree SVG Diagram -->
+        <div class="diagram-panel">
+          <svg viewBox="0 0 880 340">
+            <defs>
+              <marker id="tree-arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#38bdf8"/></marker>
+              <marker id="tree-arr-lime" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#34d399"/></marker>
+              <marker id="tree-arr-pink" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#f472b6"/></marker>
+              <marker id="tree-arr-amber" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#fbbf24"/></marker>
+            </defs>
+
+            <!-- Root Question -->
+            <rect x="300" y="10" width="280" height="46" rx="8" fill="rgba(56, 189, 248, 0.15)" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="440" y="38" fill="#fff" font-size="13" font-weight="800" text-anchor="middle">❓ 你的終端輸出形式與管線為何？</text>
+
+            <!-- Fork 1: Left Branch (Geometric Mesh / Rigging) -->
+            <path d="M 360 56 L 220 100" stroke="#38bdf8" stroke-width="1.8" marker-end="url(#tree-arr)"/>
+            <rect x="70" y="100" width="300" height="42" rx="6" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(56, 189, 248, 0.4)"/>
+            <text x="220" y="126" fill="#38bdf8" font-size="11.5" font-weight="700" text-anchor="middle">幾何參數派：需匯入 Unity / Unreal 骨骼</text>
+
+            <!-- Fork 2: Right Branch (Neural 3DGS Video) -->
+            <path d="M 520 56 L 660 100" stroke="#f472b6" stroke-width="1.8" marker-end="url(#tree-arr-pink)"/>
+            <rect x="510" y="100" width="300" height="42" rx="6" fill="rgba(244, 114, 182, 0.1)" stroke="rgba(244, 114, 182, 0.4)"/>
+            <text x="660" y="126" fill="#f472b6" font-size="11.5" font-weight="700" text-anchor="middle">神經渲染派：需照片級視訊、牙齒/毛髮光澤</text>
+
+            <!-- Sub-forks for Left Branch -->
+            <!-- Sub 1: Mobile/VR Extreme FPS -->
+            <path d="M 140 142 L 100 185" stroke="#34d399" stroke-width="1.5" marker-end="url(#tree-arr-lime)"/>
+            <rect x="10" y="185" width="180" height="50" rx="6" fill="rgba(52, 211, 153, 0.15)" stroke="#34d399"/>
+            <text x="100" y="206" fill="#34d399" font-size="11" font-weight="800" text-anchor="middle">VR/手機端極致低延遲？</text>
+            <text x="100" y="224" fill="#cbd5e1" font-size="9.5" text-anchor="middle">算力緊張、需 3000+ FPS</text>
+            <path d="M 100 235 L 100 265" stroke="#34d399" stroke-width="1.5" marker-end="url(#tree-arr-lime)"/>
+            <rect x="10" y="265" width="180" height="58" rx="6" fill="rgba(52, 211, 153, 0.25)" stroke="#34d399" stroke-width="1.5"/>
+            <text x="100" y="286" fill="#fff" font-size="12" font-weight="900" text-anchor="middle">👉 推薦：DiffusionTalker</text>
+            <text x="100" y="304" fill="#a7f3d0" font-size="9" text-anchor="middle">2步極速蒸餾 · 45MB 輕量化</text>
+
+            <!-- Sub 2: Dense Mesh Lip SOTA -->
+            <path d="M 220 142 L 220 185" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#tree-arr)"/>
+            <rect x="200" y="185" width="180" height="50" rx="6" fill="rgba(56, 189, 248, 0.15)" stroke="#38bdf8"/>
+            <text x="290" y="206" fill="#38bdf8" font-size="11" font-weight="800" text-anchor="middle">稠密 Mesh 與極致嘴型？</text>
+            <text x="290" y="224" fill="#cbd5e1" font-size="9.5" text-anchor="middle">BIWI SOTA、非言語表情控制</text>
+            <path d="M 290 235 L 290 265" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#tree-arr)"/>
+            <rect x="200" y="265" width="180" height="58" rx="6" fill="rgba(56, 189, 248, 0.25)" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="290" y="286" fill="#fff" font-size="12" font-weight="900" text-anchor="middle">👉 推薦：RefFace</text>
+            <text x="290" y="304" fill="#bae6fd" font-size="9" text-anchor="middle">48特徵點解耦 · 法向量防撕裂</text>
+
+            <!-- Sub 3: Expressive Head Pose & Editing -->
+            <path d="M 300 142 L 390 185" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#tree-arr-amber)"/>
+            <rect x="390" y="185" width="190" height="50" rx="6" fill="rgba(251, 191, 36, 0.15)" stroke="#fbbf24"/>
+            <text x="485" y="206" fill="#fbbf24" font-size="11" font-weight="800" text-anchor="middle">靈動頭部姿態與微操？</text>
+            <text x="485" y="224" fill="#cbd5e1" font-size="9.5" text-anchor="middle">告別面癱、手動微調眨眼</text>
+            <path d="M 485 235 L 485 265" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#tree-arr-amber)"/>
+            <rect x="390" y="265" width="190" height="58" rx="6" fill="rgba(251, 191, 36, 0.25)" stroke="#fbbf24" stroke-width="1.5"/>
+            <text x="485" y="286" fill="#fff" font-size="12" font-weight="900" text-anchor="middle">👉 推薦：EmoPoseFace</text>
+            <text x="485" y="304" fill="#fde68a" font-size="9" text-anchor="middle">雙分支頭姿解耦 · FMSB升降窗</text>
+
+            <!-- Sub 4 for Right Branch: 3DGS -->
+            <path d="M 660 142 L 720 185" stroke="#f472b6" stroke-width="1.5" marker-end="url(#tree-arr-pink)"/>
+            <rect x="630" y="185" width="220" height="50" rx="6" fill="rgba(244, 114, 182, 0.15)" stroke="#f472b6"/>
+            <text x="740" y="206" fill="#f472b6" font-size="11" font-weight="800" text-anchor="middle">逼真影像、多視角相機？</text>
+            <text x="740" y="224" fill="#cbd5e1" font-size="9.5" text-anchor="middle">NeRF 太慢、需支援風格遷移</text>
+            <path d="M 740 235 L 740 265" stroke="#f472b6" stroke-width="1.5" marker-end="url(#tree-arr-pink)"/>
+            <rect x="630" y="265" width="220" height="58" rx="6" fill="rgba(244, 114, 182, 0.25)" stroke="#f472b6" stroke-width="1.5"/>
+            <text x="740" y="286" fill="#fff" font-size="12" font-weight="900" text-anchor="middle">👉 推薦：ESGaussianFace</text>
+            <text x="740" y="304" fill="#fbcfe8" font-size="9" text-anchor="middle">3DGS 70 FPS · 連續情感/風格插值</text>
+          </svg>
+          <div class="diagram-caption">▲ 圖 1：3D 臉部動畫業務落地技術選型決策樹（根據終端算力、幾何表徵與後製需求快速分流）</div>
+        </div>
+      </section>
+
+      <!-- CHAPTER 2: DIFFUSIONTALKER -->
+      <section id="diffusiontalker">
+        <h2>⚡ 02. 方案講義：DiffusionTalker —— 邊緣端與 VR 的極限速度之王</h2>
+        
+        <div class="rec-card">
+          <div class="rec-badge-corner">強烈推薦 · 邊緣極速</div>
+          <div class="rec-rating">⭐ 推薦指數：4.9 / 5.0 · ICME 2025 頂會</div>
+          
+          <div class="target-audience-box">
+            🎯 <strong>推薦適用對象</strong>：VR 頭顯 (Meta Quest / Apple Vision Pro) 開發者、行動端 App 視訊虛擬化團隊、算力受限但追求即時擴散質感的遊戲團隊。
+          </div>
+
+          <h3>1. 為什麼推薦它？三大核心殺手級優勢</h3>
+          <ul>
+            <li><strong>極限推論狂飆 3632 FPS ⚡</strong>：傳統擴散模型去噪動輒數百步（如 FaceDiffuser 僅 10 FPS），DiffusionTalker 透過**漸進步數折半蒸餾**，將去噪大幅壓縮至 **2 步**，徹底攻克 VR/行動端 90Hz+ 刷新率門檻！</li>
+            <li><strong>模型體積狂降 86.4% 💾</strong>：將上百 MB 的巨大語音模型（HuBERT）以餘弦約束蒸餾至小型 CNN+BiLSTM，**整體模型權重僅 45 MB**，大幅降低下載帶寬與記憶體佔用。</li>
+            <li><strong>對比個人化（推論免標籤）🪄</strong>：內建 Contrastive Personalizer，模型直接由音訊自適應推斷發音人身份與情緒特徵，無需人工手動輸入標籤！</li>
+          </ul>
+
+          <!-- DiffusionTalker Architecture SVG -->
+          <div class="diagram-panel">
+            <svg viewBox="0 0 760 170">
+              <defs>
+                <marker id="dt-flow-arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#38bdf8"/></marker>
+              </defs>
+              <!-- Step Distillation Lane -->
+              <rect x="10" y="10" width="180" height="48" rx="6" fill="rgba(244, 114, 182, 0.12)" stroke="#f472b6"/>
+              <text x="22" y="32" fill="#f472b6" font-size="11.5" font-weight="700">教師擴散模型 (Teacher)</text>
+              <text x="22" y="48" fill="#cbd5e1" font-size="10">16 步去噪 · 僅 10.3 FPS</text>
+              
+              <path d="M 195 34 L 280 34" stroke="#38bdf8" stroke-width="2" marker-end="url(#dt-flow-arr)"/>
+              <text x="202" y="26" fill="#38bdf8" font-size="9.5" font-weight="700">步數折半損失 L_dis</text>
+              
+              <rect x="290" y="10" width="220" height="48" rx="6" fill="rgba(56, 189, 248, 0.15)" stroke="#38bdf8" stroke-width="1.5"/>
+              <text x="305" y="32" fill="#38bdf8" font-size="11.5" font-weight="800">學生模型 (Student · 2 步) ⚡</text>
+              <text x="305" y="48" fill="#34d399" font-size="10.5" font-weight="800">3632.15 FPS (狂飆 >8x)</text>
+
+              <rect x="530" y="10" width="210" height="48" rx="6" fill="rgba(52, 211, 153, 0.12)" stroke="#34d399"/>
+              <text x="545" y="32" fill="#34d399" font-size="11" font-weight="700">3D-ETF EVE 頂點誤差</text>
+              <text x="545" y="48" fill="#fff" font-size="10.5" font-weight="800">1.097 × 10⁻⁵ (SOTA 冠軍)</text>
+
+              <!-- Audio Distillation Lane -->
+              <rect x="10" y="70" width="180" height="48" rx="6" fill="rgba(251, 191, 36, 0.12)" stroke="#fbbf24"/>
+              <text x="22" y="92" fill="#fbbf24" font-size="11.5" font-weight="700">原始巨大 HuBERT</text>
+              <text x="22" y="108" fill="#cbd5e1" font-size="10">體積高達數百 MB</text>
+
+              <path d="M 195 94 L 280 94" stroke="#fbbf24" stroke-width="2" marker-end="url(#dt-flow-arr)"/>
+              <text x="202" y="86" fill="#fbbf24" font-size="9.5" font-weight="700">餘弦特徵對齊 L_ae</text>
+
+              <rect x="290" y="70" width="220" height="48" rx="6" fill="rgba(52, 211, 153, 0.15)" stroke="#34d399" stroke-width="1.5"/>
+              <text x="305" y="92" fill="#34d399" font-size="11.5" font-weight="800">小型 CNN+BiLSTM 💾</text>
+              <text x="305" y="108" fill="#cbd5e1" font-size="10.5" font-weight="800">僅 45 MB (-86.4% 瘦身)</text>
+
+              <!-- Personalizer Bar -->
+              <rect x="10" y="130" width="730" height="30" rx="4" fill="rgba(167, 139, 250, 0.12)" stroke="rgba(167, 139, 250, 0.35)"/>
+              <text x="25" y="150" fill="#a78bfa" font-size="10.5" font-weight="800">🪄 對比個人化增強器 (Contrastive Personalizer L_pc)</text>
+              <text x="320" y="150" fill="#cbd5e1" font-size="10">同身份同情緒拉近、異類推開，大幅增強眉眼生動度與眼神微動！</text>
+            </svg>
+            <div class="diagram-caption">▲ 圖 2：DiffusionTalker 雙重蒸餾（步數折半 + 音訊壓縮）與對比個人化整體管線架構圖</div>
+          </div>
+
+          <h3>2. 落地避坑指南（踩坑預警）⚠️</h3>
+          <div class="callout callout-warning">
+            <div class="callout-title">⚠️ 權衡預警：上半臉生動度 vs 嘴型微量損耗</div>
+            消融實驗指出，個人化增強器（$L_{pc}$）專注於推高上半臉眼神與眉毛的情感表現（EVE 改善幅度高達 79%），但在嘴唇對稱誤差（LVE）上會帶來極微量（&lt; 5%）的 Trade-off。若業務極度苛求嘴型同步而不在意上半臉動態，可適度調低 $L_{pc}$ 權重。
+          </div>
+        </div>
+      </section>
+
+      <!-- CHAPTER 3: REFFACE -->
+      <section id="refface">
+        <h2>🛸 03. 方案講義：RefFace —— 稠密 3D 網格與遊戲管線的嘴型天花板</h2>
+
+        <div class="rec-card">
+          <div class="rec-badge-corner">強烈推薦 · 嘴型極致</div>
+          <div class="rec-rating">⭐ 推薦指數：4.8 / 5.0 · AIAHPC 2025</div>
+
+          <div class="target-audience-box">
+            🎯 <strong>推薦適用對象</strong>：遊戲技術美術（Technical Artists TA）、3A 影視動畫過場團隊、需要將高精度稠密 3D Mesh（FLAME / BIWI 23,370 頂點）導入 Maya/Blender/Unreal 的流水線。
+          </div>
+
+          <h3>1. 為什麼推薦它？三大核心殺手級優勢</h3>
+          <ul>
+            <li><strong>刷新歷史紀錄的唇同步表現 👑</strong>：在權威測試集 BIWI-Test-A 上取得 **LVE 3.8466 × 10⁻⁴ mm** 與 **FDD 2.9857 × 10⁻⁵ mm**，全面擊敗 FaceFormer, CodeTalker 與 FaceDiffuser，奪得當前最精準嘴型同步王座！</li>
+            <li><strong>48 上半臉特徵點解耦引導 📍</strong>：以往若用全部 68 個特徵點控制表情，嘴部的 20 個點會與語音音素打架。RefFace 聰明地剔除嘴部，**僅用 48 個上半臉特徵點作為 Reference**，實現「音訊管嘴動、特徵點管眨眼挑眉」的完美解耦。</li>
+            <li><strong>表面法向量損失（$L_{snv}$）根治幾何撕裂 🩹</strong>：跨序列訓練時，上下半臉容易在接縫處網格撕裂。引入面片法向量餘弦對齊損失，徹底消除臉頰縫合偽影！</li>
+          </ul>
+
+          <!-- RefFace Architecture SVG -->
+          <div class="diagram-panel">
+            <svg viewBox="0 0 760 160">
+              <defs>
+                <marker id="rf-arr-cyan" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#38bdf8"/></marker>
+              </defs>
+              <!-- Face Schema (Left) -->
+              <g transform="translate(20, 10)">
+                <ellipse cx="60" cy="65" rx="50" ry="60" fill="none" stroke="rgba(255, 255, 255, 0.15)" stroke-dasharray="3"/>
+                <!-- Upper Face Cyan -->
+                <path d="M 25 35 Q 42 26 55 32" fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+                <path d="M 65 32 Q 78 26 95 35" fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+                <ellipse cx="40" cy="46" rx="9" ry="5" fill="none" stroke="#38bdf8" stroke-width="2"/>
+                <circle cx="40" cy="46" r="2.5" fill="#38bdf8"/>
+                <ellipse cx="80" cy="46" rx="9" ry="5" fill="none" stroke="#38bdf8" stroke-width="2"/>
+                <circle cx="80" cy="46" r="2.5" fill="#38bdf8"/>
+                <path d="M 60 48 L 60 70 L 52 75 L 68 75" fill="none" stroke="#38bdf8" stroke-width="2"/>
+                
+                <!-- Lower Lip Pink -->
+                <path d="M 40 95 Q 60 88 80 95 Q 60 110 40 95 Z" fill="rgba(244, 114, 182, 0.25)" stroke="#f472b6" stroke-width="2.5"/>
+                
+                <!-- Boundary Cut -->
+                <line x1="15" y1="82" x2="105" y2="82" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="2"/>
+                <text x="10" y="142" fill="#38bdf8" font-size="9" font-weight="700">● 48 上半臉特徵點 (參考表情)</text>
+                <text x="10" y="154" fill="#f472b6" font-size="9" font-weight="700">● 20 下半臉點 (音訊驅動)</text>
+              </g>
+
+              <!-- Comparison Blocks (Right) -->
+              <g transform="translate(180, 10)">
+                <rect x="0" y="5" width="550" height="58" rx="6" fill="rgba(239, 68, 68, 0.08)" stroke="rgba(239, 68, 68, 0.35)"/>
+                <text x="15" y="27" fill="#f87171" font-size="11.5" font-weight="800">❌ 傳統拼接致命缺陷：幾何解離撕裂 (Surface Dissociation)</text>
+                <text x="15" y="48" fill="#cbd5e1" font-size="10">唇部頂點受語音牽引、上半臉頂點受外部圖片引導，三角形邊界法向量突變，接縫嚴重變形！</text>
+
+                <rect x="0" y="75" width="550" height="68" rx="6" fill="rgba(52, 211, 153, 0.12)" stroke="rgba(52, 211, 153, 0.45)"/>
+                <text x="15" y="98" fill="#34d399" font-size="11.5" font-weight="800">✅ 表面法向量損失 L_snv：幾何平滑防撕裂公式 🩹</text>
+                <text x="15" y="118" fill="#cbd5e1" font-size="10">$$\mathcal{L}_{snv} = \sum_{B} \sum_{F} \sum_{faces} \cos(\hat{\mathbf{n}}_0, \mathbf{n}_0) \implies \text{相鄰面片法向量餘弦相似度最大化，接縫毫無痕跡！}$$</text>
+                <text x="15" y="134" fill="#38bdf8" font-size="9.5" font-weight="700">🏆 成果：BIWI-Test-A 歷史最高 SOTA (LVE 3.8466, FDD 2.9857)</text>
+              </g>
+            </svg>
+            <div class="diagram-caption">▲ 圖 3：RefFace 稀疏特徵點解耦機制與表面法向量損失（L_snv）幾何防撕裂示意圖</div>
+          </div>
+
+          <h3>2. 落地避坑指南（踩坑預警）⚠️</h3>
+          <div class="callout callout-warning">
+            <div class="callout-title">⚠️ 依賴預警：對外部 Reference 影格品質敏感</div>
+            RefFace 需要提供 48 個特徵點作為空間注意力條件。如果外部輸入的參考人臉圖片產生了遮擋或特徵點檢測抖動，會直接傳遞到生成的 3D 臉上。建議在管線前段加入一階特徵點平滑濾波（如 OneEuro Filter）。
+          </div>
+        </div>
+      </section>
+
+      <!-- CHAPTER 4: EMOPOSEFACE -->
+      <section id="emoposeface">
+        <h2>🤖 04. 方案講義：EmoPoseFace —— 靈動頭部姿態與微表情手動微操利器</h2>
+
+        <div class="rec-card">
+          <div class="rec-badge-corner">強烈推薦 · 虛擬主播首選</div>
+          <div class="rec-rating">⭐ 推薦指數：4.9 / 5.0 · IEEE TVCG 2026 頂刊</div>
+
+          <div class="target-audience-box">
+            🎯 <strong>推薦適用對象</strong>：AI 數位人主播直播團隊、RPG 遊戲對話式 NPC 系統、需要動畫師手動在特定台詞「微調挑眉、眨眼」的虛擬偶像團隊。
+          </div>
+
+          <h3>1. 為什麼推薦它？三大核心殺手級優勢</h3>
+          <ul>
+            <li><strong>徹底告別「說話動嘴不動頭的木頭人面癱」🗿</strong>：說話時自然帶有節奏律動（點頭、歪頭傾聽），頭部節奏對齊（Beat Alignment）達到 **0.33**，大幅超越傳統靜態頭姿模型！</li>
+            <li><strong>雙分支 GRU 顯式解耦（根除頭部抽搐 Jitter）👥</strong>：剛體旋轉（Head Pose $\rho \in \mathbb{R}^3$）與非剛體表情（FLAME 5023 頂點）物理性質截然不同。EmoPoseFace 證明單分支聯合預測必然導致高頻抽搐，**雙分支獨立去噪配合二階時序平滑損失才是正解**！</li>
+            <li><strong>FMSB 物理升降窗微操（對嘴零干擾）🪟</strong>：首創 BlendMorph 物理升降窗，動畫師插入眨眼、挑眉等動作時，模型自動降低唇部肌肉權重，**微表情完全不損害發音對嘴**！</li>
+          </ul>
+
+          <!-- EmoPoseFace Architecture SVG -->
+          <div class="diagram-panel">
+            <svg viewBox="0 0 760 170">
+              <defs>
+                <marker id="ep-flow-arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#fbbf24"/></marker>
+              </defs>
+              <!-- Dual Branch Left -->
+              <g transform="translate(10, 10)">
+                <rect x="0" y="24" width="70" height="56" rx="6" fill="rgba(255, 255, 255, 0.08)" stroke="#cbd5e1"/>
+                <text x="14" y="46" fill="#fff" font-size="11" font-weight="800">輸入語音</text>
+                <text x="16" y="62" fill="#94a3b8" font-size="9.5">HuBERT</text>
+
+                <!-- Upper Head Pose Branch -->
+                <path d="M 70 38 L 110 18 L 130 18" stroke="#fbbf24" stroke-width="2" marker-end="url(#ep-flow-arr)"/>
+                <rect x="140" y="4" width="180" height="36" rx="5" fill="rgba(251, 191, 36, 0.15)" stroke="#fbbf24"/>
+                <text x="152" y="22" fill="#fbbf24" font-size="11" font-weight="800">剛體頭姿分支 ρ ∈ ℝ³ 🕺</text>
+                <text x="152" y="34" fill="#cbd5e1" font-size="9">旋轉角度 + L_smooth (消除抽搐)</text>
+
+                <!-- Lower Expression Branch -->
+                <path d="M 70 65 L 110 85 L 130 85" stroke="#f472b6" stroke-width="2" marker-end="url(#ep-flow-arr)"/>
+                <rect x="140" y="68" width="180" height="36" rx="5" fill="rgba(244, 114, 182, 0.15)" stroke="#f472b6"/>
+                <text x="152" y="86" fill="#f472b6" font-size="11" font-weight="800">非剛體表情分支 M₀ 🎭</text>
+                <text x="152" y="98" fill="#cbd5e1" font-size="9">FLAME 5023 頂點形變 (15069維)</text>
+
+                <!-- Bottom Achievement -->
+                <rect x="0" y="116" width="320" height="36" rx="5" fill="rgba(52, 211, 153, 0.12)" stroke="rgba(52, 211, 153, 0.35)"/>
+                <text x="12" y="134" fill="#34d399" font-size="10.5" font-weight="800">3D MEAD SOTA：LVE 1.3211 · FVE 1.3626</text>
+                <text x="12" y="146" fill="#cbd5e1" font-size="9">盲測滿意度 88%~92% · 遠超單目 GT 重建自然度</text>
+              </g>
+
+              <!-- FMSB Physical Window Curve Right -->
+              <g transform="translate(360, 10)">
+                <text x="10" y="16" fill="#38bdf8" font-size="12" font-weight="800">🪟 FMSB 物理升降過渡窗演算法 ϕ(i)</text>
+                <!-- Axes -->
+                <line x1="20" y1="105" x2="360" y2="105" stroke="#64748b" stroke-width="1.2"/>
+                <line x1="20" y1="105" x2="20" y2="30" stroke="#64748b" stroke-width="1.2"/>
+                <text x="8" y="40" fill="#94a3b8" font-size="9.5">1.0</text>
+                <text x="8" y="108" fill="#94a3b8" font-size="9.5">0</text>
+                <text x="345" y="120" fill="#94a3b8" font-size="9.5">時間幀 i</text>
+
+                <!-- Trapezoid Curve -->
+                <path d="M 20 105 L 60 105 L 100 40 L 220 40 L 260 105 L 340 105" fill="rgba(56, 189, 248, 0.18)" stroke="#38bdf8" stroke-width="2.5"/>
+
+                <text x="65" y="122" fill="#f472b6" font-size="9" font-weight="700">上升過渡窗 w</text>
+                <text x="135" y="122" fill="#34d399" font-size="9" font-weight="700">動作持續期 τ (眨眼/挑眉)</text>
+                <text x="235" y="122" fill="#fbbf24" font-size="9" font-weight="700">衰減回覆窗 w</text>
+
+                <!-- Protection Box -->
+                <rect x="20" y="132" width="340" height="24" rx="4" fill="rgba(52, 211, 153, 0.15)" stroke="rgba(52, 211, 153, 0.4)"/>
+                <text x="32" y="148" fill="#34d399" font-size="10" font-weight="800">🛡️ 唇部動作單元 (AU) 權重刻意歸零 ➔ 發音對嘴精準度零干擾！</text>
+              </g>
+            </svg>
+            <div class="diagram-caption">▲ 圖 4：EmoPoseFace 雙分支（頭姿+面部）解耦與 FMSB 物理升降窗局部微表情編輯曲線圖</div>
+          </div>
+
+          <h3>2. 落地避坑指南（踩坑預警）⚠️</h3>
+          <div class="callout callout-warning">
+            <div class="callout-title">⚠️ 算力預警：1000 步擴散去噪推論延遲較長</div>
+            EmoPoseFace 主打極致的情感表現力與微表情自然度，但去噪步數較多（原生需 1000 步），若要整合進 60 FPS 即時串流互動系統，建議在後續工程中結合 DiffusionTalker 的漸進步數蒸餾技巧，將其蒸餾至 4~8 步。
+          </div>
+        </div>
+      </section>
+
+      <!-- CHAPTER 5: LG-LDM -->
+      <section id="lgldm">
+        <h2>🎭 05. 方案講義：LG-LDM —— 以情感為中心的局部到全局潛在擴散</h2>
+
+        <div class="rec-card">
+          <div class="rec-badge-corner">IEEE TVCG 2024 頂刊</div>
+
+          <div class="rec-rating">
+            <span>推薦指數：</span>
+            <span>⭐⭐⭐⭐☆</span>
+            <span style="color: var(--text-muted); font-size: 0.8rem; margin-left: 0.5rem;">(細粒度情緒與微表情專用)</span>
+          </div>
+
+          <div class="target-audience-box">
+            <strong>🎯 目標場景群體：</strong>
+            <span class="tag tag-pink">多表情 3D NPC</span>
+            <span class="tag tag-cyan">離散情緒驅動</span>
+            <span class="tag tag-amber">FLAME 5023 網格</span>
+            <br>
+            <strong>適用痛點：</strong> 需要精準區分多種細膩情緒（如恐懼、驚訝、蔑視），但過去模型容易將罕見表情與咬字口型混雜塌陷的業務場景。
+          </div>
+
+          <h3>1. 核心技術精髓（為什麼推薦？）💡</h3>
+          <p>
+            傳統模型（如 CodeTalker）使用單一共享離散碼本，導致情緒微表情容易被高頻的中性口型淹沒。LG-LDM 首創<strong>「以情緒為中心的 EVQ-VAE 獨立正交碼本」</strong>搭配<strong>「臉部去噪模型 (FDM)」</strong>，透過自注意力提取全局情緒、交叉注意力將語音聲學特徵注入局部唇部，實現<strong>局部嘴唇音唇同步</strong>與<strong>全局情緒微表情</strong>的和諧共生！
+          </p>
+
+          <!-- SVG Diagram for LG-LDM -->
+          <div class="diagram-panel">
+            <svg viewBox="0 0 760 210">
+              <defs>
+                <marker id="lg-arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#38bdf8"/></marker>
+              </defs>
+              <rect x="20" y="20" width="130" height="36" rx="4" fill="rgba(251, 191, 36, 0.15)" stroke="#fbbf24"/>
+              <text x="85" y="43" fill="#fbbf24" font-size="11" text-anchor="middle">情緒標籤 E_k (8類)</text>
+
+              <path d="M 150 38 L 200 38" stroke="#fbbf24" stroke-width="1.8" marker-end="url(#lg-arr)"/>
+              <rect x="200" y="15" width="160" height="46" rx="6" fill="rgba(244, 114, 182, 0.2)" stroke="#f472b6"/>
+              <text x="280" y="36" fill="#f472b6" font-size="11" font-weight="bold" text-anchor="middle">EVQ-VAE 獨立碼本</text>
+              <text x="280" y="52" fill="#fff" font-size="9" text-anchor="middle">(每種情緒獨立正交空間)</text>
+
+              <rect x="20" y="85" width="130" height="36" rx="4" fill="rgba(56, 189, 248, 0.15)" stroke="#38bdf8"/>
+              <text x="85" y="108" fill="#38bdf8" font-size="11" text-anchor="middle">語音訊號 (HuBERT)</text>
+
+              <path d="M 150 103 L 200 103" stroke="#38bdf8" stroke-width="1.8"/>
+              <path d="M 280 61 L 280 85" stroke="#f472b6" stroke-width="1.8"/>
+
+              <rect x="200" y="85" width="280" height="75" rx="6" fill="rgba(255,255,255,0.05)" stroke="#a78bfa"/>
+              <text x="340" y="108" fill="#a78bfa" font-size="12" font-weight="bold" text-anchor="middle">臉部去噪模型 (FDM)</text>
+              <text x="340" y="126" fill="#38bdf8" font-size="9.5" text-anchor="middle">• SA 自注意力: 全臉宏觀情緒特徵 F_n</text>
+              <text x="340" y="144" fill="#f472b6" font-size="9.5" text-anchor="middle">• CA 交叉注意力: 局部唇部音唇同步 (Q_g, K_n, V_n)</text>
+
+              <path d="M 480 122 L 530 122" stroke="#34d399" stroke-width="2" marker-end="url(#lg-arr)"/>
+              <rect x="530" y="100" width="200" height="45" rx="6" fill="rgba(52, 211, 153, 0.2)" stroke="#34d399"/>
+              <text x="630" y="128" fill="#34d399" font-size="12" font-weight="bold" text-anchor="middle">FLAME 5023 頂點 Mesh</text>
+            </svg>
+            <div class="diagram-caption">▲ 圖 5：LG-LDM EVQ-VAE 獨立情緒碼本與 FDM 局部-全局交叉注意力去噪管線</div>
+          </div>
+
+          <h3>2. 落地避坑指南（踩坑預警）⚠️</h3>
+          <div class="callout callout-warning">
+            <div class="callout-title">⚠️ 推論速度限制：未經蒸餾前為 1000 步擴散</div>
+            原生 LG-LDM 採用 DDPM 1000 步採樣，單張 RTX 3090 渲染網格幀率約為 8.36 FPS，若需部署於行動端或 VR 即時管線，強烈建議結合 [[2025_DiffusionTalker]] 的步數折半蒸餾技術進行二次加速。
+          </div>
+        </div>
+      </section>
+
+      <!-- CHAPTER 6: ESGAUSSIANFACE -->
+      <section id="esgaussianface">
+        <h2>💖 06. 方案講義：ESGaussianFace —— 破解 NeRF 延遲的照片級 3DGS 渲染神作</h2>
+
+        <div class="rec-card">
+          <div class="rec-badge-corner">強烈推薦 · 影視級寫實</div>
+          <div class="rec-rating">⭐ 推薦指數：4.9 / 5.0 · IEEE TVCG 2026 頂刊</div>
+
+          <div class="target-audience-box">
+            🎯 <strong>推薦適用對象</strong>：追求照片級高擬真數位人視訊生成的影視製作公司、AI 虛擬偶像宣傳片團隊、需要支援多視角自由旋轉運鏡與卡通風格化變形的團隊。
+          </div>
+
+          <h3>1. 為什麼推薦它？三大核心殺手級優勢</h3>
+          <ul>
+            <li><strong>實時神經渲染 69.62 FPS 🚀</strong>：過去 NeRF 渲染單幀耗時數秒（AD-NeRF 僅 0.11 FPS、SyncTalk 僅 1.03 FPS），ESGaussianFace 藉由顯式 3D 高斯潑濺（3DGS）與微分光柵化，直接輸出帶有逼真牙齒黏膜微光、毛髮與光影的 RGB 視訊，達到 **69.62 FPS 實時渲染**！</li>
+            <li><strong>空間注意力機制（ESAM）🧭</strong>：AGA 層將語音訊號路由至唇部；EGA 層將 3DMM 情緒向量路由至額頭與眉眼，使情緒演繹完全不破壞發音對齊！</li>
+            <li><strong>連續潛在空間線性插值（情緒與藝術風格雙遷移）🎨</strong>：透過公式 $f = \alpha f_1 + (1-\alpha) f_2$，支援從 100% 喜悅連續平滑變形至 100% 憤怒（中途無跳影格），並支援從真人寫實連續變形為 3D 卡通皮克斯風格！</li>
+          </ul>
+
+          <!-- ESGaussianFace Architecture SVG -->
+          <div class="diagram-panel">
+            <svg viewBox="0 0 760 170">
+              <defs>
+                <marker id="es-flow-arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#f472b6"/></marker>
+                <linearGradient id="handbook-grad-emo" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#34d399"/><stop offset="50%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#f87171"/>
+                </linearGradient>
+                <linearGradient id="handbook-grad-sty" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#a78bfa"/>
+                </linearGradient>
+              </defs>
+
+              <!-- ESAM Spatial Routing (Left) -->
+              <g transform="translate(10, 10)">
+                <text x="5" y="16" fill="#f472b6" font-size="12" font-weight="800">🧭 ESAM 動態空間注意力路由機制</text>
+
+                <rect x="5" y="30" width="100" height="34" rx="4" fill="rgba(56, 189, 248, 0.15)" stroke="#38bdf8"/>
+                <text x="16" y="52" fill="#38bdf8" font-size="10.5" font-weight="700">語音特徵</text>
+                <path d="M 105 47 L 165 47" stroke="#38bdf8" stroke-width="2" marker-end="url(#es-flow-arr)"/>
+                <text x="115" y="38" fill="#38bdf8" font-size="9" font-weight="700">AGA 層</text>
+
+                <rect x="180" y="30" width="130" height="34" rx="4" fill="rgba(56, 189, 248, 0.15)" stroke="#38bdf8"/>
+                <text x="195" y="52" fill="#38bdf8" font-size="11" font-weight="800">唇部高斯點 👄</text>
+
+                <rect x="5" y="78" width="100" height="34" rx="4" fill="rgba(244, 114, 182, 0.15)" stroke="#f472b6"/>
+                <text x="16" y="100" fill="#f472b6" font-size="10.5" font-weight="700">3DMM 情緒</text>
+                <path d="M 105 95 L 165 95" stroke="#f472b6" stroke-width="2" marker-end="url(#es-flow-arr)"/>
+                <text x="115" y="86" fill="#f472b6" font-size="9" font-weight="700">EGA 層</text>
+
+                <rect x="180" y="78" width="130" height="34" rx="4" fill="rgba(244, 114, 182, 0.15)" stroke="#f472b6"/>
+                <text x="195" y="100" fill="#f472b6" font-size="11" font-weight="800">眉眼額頭點 🎭</text>
+
+                <rect x="5" y="125" width="305" height="30" rx="4" fill="rgba(52, 211, 153, 0.12)" stroke="rgba(52, 211, 153, 0.35)"/>
+                <text x="15" y="145" fill="#34d399" font-size="10" font-weight="800">MEAD 影像全項 SOTA: PSNR 31.87 dB · FID 16.93</text>
+              </g>
+
+              <!-- Continuous Latent Linear Interpolation (Right) -->
+              <g transform="translate(345, 10)">
+                <text x="15" y="16" fill="#fbbf24" font-size="12" font-weight="800">🎚️ 連續潛在空間線性插值 (f = αf₁ + (1-α)f₂)</text>
+
+                <!-- Emotion Slider -->
+                <text x="15" y="38" fill="#94a3b8" font-size="10">情感維度連續過渡：</text>
+                <rect x="15" y="46" width="360" height="12" rx="6" fill="url(#handbook-grad-emo)" stroke="rgba(255, 255, 255, 0.2)"/>
+                <circle cx="195" cy="52" r="8" fill="#fff" stroke="#f472b6" stroke-width="2.5"/>
+                <text x="15" y="74" fill="#34d399" font-size="10" font-weight="700">😃 100% 喜悅 (α=1)</text>
+                <text x="180" y="74" fill="#cbd5e1" font-size="9">α=0.5</text>
+                <text x="270" y="74" fill="#f87171" font-size="10" font-weight="700">😡 100% 憤怒 (α=0)</text>
+
+                <!-- Style Slider -->
+                <text x="15" y="98" fill="#94a3b8" font-size="10">風格維度連續遷移 (VToonify 監督)：</text>
+                <rect x="15" y="106" width="360" height="12" rx="6" fill="url(#handbook-grad-sty)" stroke="rgba(255, 255, 255, 0.2)"/>
+                <circle cx="120" cy="112" r="8" fill="#fff" stroke="#38bdf8" stroke-width="2.5"/>
+                <text x="15" y="134" fill="#38bdf8" font-size="10" font-weight="700">🧑 真人寫實超清頭像</text>
+                <text x="245" y="134" fill="#a78bfa" font-size="10" font-weight="700">👾 3D 卡通 / 皮克斯風格</text>
+
+                <rect x="15" y="142" width="360" height="24" rx="4" fill="rgba(251, 191, 36, 0.15)" stroke="rgba(251, 191, 36, 0.35)"/>
+                <text x="25" y="158" fill="#fbbf24" font-size="10" font-weight="800">🎯 Acc_emo = 75.94% 情感分類正確率 (超越基線 20%~50%)</text>
+              </g>
+            </svg>
+            <div class="diagram-caption">▲ 圖 6：ESGaussianFace ESAM 空間動態路由與潛在空間情感/風格連續線性插值機制圖</div>
+          </div>
+
+          <h3>2. 落地避坑指南（踩坑預警）⚠️</h3>
+          <div class="callout callout-warning">
+            <div class="callout-title">⚠️ 泛化預警：依賴逐人訓練（Per-Subject）</div>
+            目前 3DGS 方案均需採集該名真人的多視角影片進行客製化微調，尚不具備「給任意一張單照即可即時通用生成」的 One-Shot 泛化能力。若業務需要成千上萬個隨機路人角色，仍建議優先採用幾何網格方案。
+          </div>
+        </div>
+      </section>
+
+      <!-- CHAPTER 7: COMPARATIVE MATRIX -->
+      <section id="matrix">
+        <h2>📊 07. 橫向實戰選型大矩陣：全維度指標對比</h2>
+        <p>為便於架構決策，下表整理了五個方案在工程落地最關心的核心維度對比：</p>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>評選維度</th>
+                <th>⚡ DiffusionTalker</th>
+                <th>🛸 RefFace</th>
+                <th>🎭 LG-LDM (TVCG 24)</th>
+                <th>🤖 EmoPoseFace</th>
+                <th>💖 ESGaussianFace</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>發表會議/期刊</strong></td>
+                <td>ICME 2025 頂會</td>
+                <td>AIAHPC 2025</td>
+                <td>IEEE TVCG 2024 頂刊</td>
+                <td>IEEE TVCG 2026 頂刊</td>
+                <td>IEEE TVCG 2026 頂刊</td>
+              </tr>
+              <tr>
+                <td><strong>幾何輸出空間</strong></td>
+                <td>ARKit 52 Blendshapes</td>
+                <td>稠密 3D Mesh (BIWI 23k)</td>
+                <td>FLAME 5023 頂點 Mesh</td>
+                <td>混合 FLAME Mesh + 頭姿</td>
+                <td>顯式 3DGS 高斯點雲 (RGB)</td>
+              </tr>
+              <tr>
+                <td><strong>演算法主幹</strong></td>
+                <td>DDPM + 2步蒸餾</td>
+                <td>DDPM + 空間時間注意力</td>
+                <td>LG-LDM (FDM) + EVQ-VAE 碼本</td>
+                <td>雙分支 GRU 擴散 + FMSB</td>
+                <td>微分光柵化神經渲染 + ESAM</td>
+              </tr>
+              <tr>
+                <td><strong>推論速度</strong></td>
+                <td><span class="badge-sota">⚡ 3632.15 FPS</span></td>
+                <td>0.364 秒 / 10 步</td>
+                <td>8.36 FPS (RTX 3090)</td>
+                <td>1000 步擴散 (離線為主)</td>
+                <td><span class="badge-sota">🚀 69.62 FPS (實時)</span></td>
+              </tr>
+              <tr>
+                <td><strong>模型體積</strong></td>
+                <td><span class="badge-sota">💾 45 MB (-86.4%)</span></td>
+                <td>標準權重 (~500MB)</td>
+                <td>386.24 M 參數</td>
+                <td>標準權重 (~600MB)</td>
+                <td>逐人高斯場 (~150MB/人)</td>
+              </tr>
+              <tr>
+                <td><strong>遊戲引擎整合度</strong></td>
+                <td>⭐⭐⭐⭐⭐ (原生 52 BS)</td>
+                <td>⭐⭐⭐⭐ (標準 3D Mesh)</td>
+                <td>⭐⭐⭐⭐ (FLAME Mesh)</td>
+                <td>⭐⭐⭐⭐ (FLAME Mesh)</td>
+                <td>⭐⭐⭐ (需 3DGS 插件)</td>
+              </tr>
+              <tr>
+                <td><strong>視覺寫實質感</strong></td>
+                <td>依賴外部著色器</td>
+                <td>依賴外部著色器</td>
+                <td>依賴外部著色器</td>
+                <td>依賴外部著色器</td>
+                <td><span class="badge-sota">⭐⭐⭐⭐⭐ (自帶牙齒毛髮光澤)</span></td>
+              </tr>
+              <tr>
+                <td><strong>額外控制特色</strong></td>
+                <td>身份+情緒自適應</td>
+                <td>48 特徵點參考防撕裂</td>
+                <td>EVQ-VAE 獨立情緒正交空間</td>
+                <td>頭部姿態同步 + 肌肉微操</td>
+                <td>連續情緒/藝術風格遷移</td>
+              </tr>
+              <tr>
+                <td><strong>權威測試集 SOTA</strong></td>
+                <td>3D-ETF EVE 1.097</td>
+                <td>BIWI LVE 3.8466</td>
+                <td>3D MEAD EME 2.5885, LVE 2.0211</td>
+                <td>3D MEAD LVE 1.3211</td>
+                <td>MEAD PSNR 31.87 dB</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- CHAPTER 8: AUDIO ADVISORY -->
+      <section id="audio-advisory">
+        <h2>🔊 08. 聲學編碼器選型定論：HuBERT vs Wav2Vec 2.0 實證分析</h2>
+        
+        <p>在過去很長一段時間，語音驅動臉部動畫領域主要採用 Facebook 的 <strong>Wav2Vec 2.0</strong>。然而在 2025~2026 年最新論文的嚴格控制變因對決中，**HuBERT 確立了不可撼動的統治地位**。</p>
+
+        <div class="diagram-panel">
+          <svg viewBox="0 0 760 100">
+            <!-- HuBERT Box -->
+            <rect x="20" y="10" width="340" height="80" rx="6" fill="rgba(52, 211, 153, 0.12)" stroke="#34d399" stroke-width="1.5"/>
+            <text x="35" y="34" fill="#34d399" font-size="12" font-weight="800">🏆 HuBERT (Hidden-Unit BERT) · 推薦首選</text>
+            <text x="35" y="56" fill="#cbd5e1" font-size="10">✅ 離線 K-Means 聲學單元分組，完美對應發音口型音素！</text>
+            <text x="35" y="74" fill="#38bdf8" font-size="10" font-weight="700">實測：RefFace 證實換用 HuBERT 使嘴唇誤差改善 8.6%！</text>
+
+            <!-- Wav2Vec 2.0 Box -->
+            <rect x="390" y="10" width="340" height="80" rx="6" fill="rgba(244, 114, 182, 0.08)" stroke="rgba(244, 114, 182, 0.35)"/>
+            <text x="405" y="34" fill="#f472b6" font-size="12" font-weight="800">❌ Wav2Vec 2.0 · 逐漸被取代</text>
+            <text x="405" y="56" fill="#cbd5e1" font-size="10">⚠️ 採用對比學習量化，高層語義過多，易損丟發音邊界細節。</text>
+            <text x="405" y="74" fill="#f87171" font-size="10">實測：BIWI 評測中 LVE 惡化至 4.2063，動態僵硬度上升。</text>
+          </svg>
+          <div class="diagram-caption">▲ 圖 6：RefFace 實證消融對決結論：HuBERT 在唇部音素對齊上顯著優於 Wav2Vec 2.0</div>
+        </div>
+
+        <div class="callout callout-success">
+          <div class="callout-title">💡 工程落地的架構師建議</div>
+          <strong>「全面擁抱 HuBERT，並採用知識蒸餾克服儲存體積！」</strong><br>
+          HuBERT 雖然效果最優，但基礎模型高達數百 MB。實戰中強烈推薦採用 <strong>DiffusionTalker 的聲學蒸餾方案</strong>：將 HuBERT 特徵作為教師監督，訓練極小型的 CNN+BiLSTM，即可在維持 HuBERT 頂級發音精度的同時，將體積壓到 45 MB！
+        </div>
+      </section>
+
+      <!-- CHAPTER 9: QUIZ -->
+      <section id="quiz">
+        <h2>💡 09. 思考題與實戰自我檢核</h2>
+        <p>為檢驗您對本講義技術選型要點的掌握程度，請思考以下三個實戰架構設計題：</p>
+
+        <div class="rec-card" style="border-left: 4px solid var(--purple);">
+          <h3 style="color: var(--purple);">❓ 思考題 1：如果要做一款支援 iOS/Android 手機即時視訊對話的虛擬頭像 App，該如何搭配選型？</h3>
+          <p><strong>【專家解析】</strong>：推薦採用 <strong>DiffusionTalker</strong>。原因在於手機端算力與電池續航極為有限，DiffusionTalker 的 2 步蒸餾（3632 FPS）確保極低 GPU 佔用，且 45 MB 的體積讓 App 包體極易下載分發。輸出格式為 ARKit 52 Blendshapes，可直接調用 iOS/Android 原生渲染管線。</p>
+        </div>
+
+        <div class="rec-card" style="border-left: 4px solid var(--amber);">
+          <h3 style="color: var(--amber);">❓ 思考題 2：為什麼過去嘗試將「頭部姿態」和「臉部表情」放在同一個神經網絡預測時，角色頭部總會不由自主地高頻顫抖？</h3>
+          <p><strong>【專家解析】</strong>：如 <strong>EmoPoseFace</strong> 嚴格證實，頭部旋轉屬於<strong>剛體運動（Rigid Motion）</strong>，物理慣性大、頻率低；而臉部肌肉屬於<strong>非剛體運動（Non-Rigid Deformation）</strong>，頻率高、動作微小。若用單一分支同時回歸，損失函數會在高頻表情特徵的干擾下，把高頻雜訊誤傳給頭部旋轉參數，造成抽搐。必須採用雙分支解耦，並對頭部施加二階時序平滑損失。</p>
+        </div>
+
+        <div class="rec-card" style="border-left: 4px solid var(--pink);">
+          <h3 style="color: var(--pink);">❓ 思考題 3：在追求照片級寫實的 AI 虛擬歌手直播中，為什麼 3DGS（高斯潑濺）比 NeRF 更具備商業落地價值？</h3>
+          <p><strong>【專家解析】</strong>：NeRF 採用隱式體積渲染，每條射線需採樣數百個點進行神經網絡推論，影格率通常低於 1 FPS，無法實現即時直播。而 <strong>ESGaussianFace</strong> 所採用的 3DGS 是<strong>顯式點雲 + GPU 微分光柵化</strong>，直接將 3D 高斯投影至 2D 螢幕，速度狂飆至 70 FPS，完全滿足廣播級 60 FPS 實時即時渲染。</p>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <footer>
+    <p>⚡ 3D 臉部動畫知識庫專案 · LLM WIKI HANDBOOK 📖</p>
+    <p style="margin-top: 0.4rem; font-size: 0.78rem;">基於 Andrej Karpathy LLM Wiki 模式建立 · 收錄頂會/頂刊精選論文 · 2026 版</p>
+  </footer>
+
+  <script>
+    // Smooth scrolling & scrollspy
+    const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('.toc-link');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop - 80;
+        if (pageYOffset >= sectionTop) {
+          current = section.getAttribute('id');
+        }
+      });
+
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${current}`) {
+          link.classList.add('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

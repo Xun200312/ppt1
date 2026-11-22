@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🛸 RefFace 專篇解讀 | Y2K Cyber Deck 💿</title>
+  <!-- KaTeX for math expressions -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+  <style>
+    :root {
+      --y2k-lime: #34d399;
+      --y2k-lime-border: rgba(52, 211, 153, 0.35);
+      --y2k-cyan: #38bdf8;
+      --y2k-pink: #f472b6;
+      --bg-dark: #0f1423;
+      --card-bg: rgba(21, 28, 48, 0.88);
+      --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", "Segoe UI Emoji", "Apple Color Emoji", sans-serif;
+      --font-mono: "Cascadia Code", "Consolas", "Courier New", monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        linear-gradient(rgba(52, 211, 153, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56, 189, 248, 0.04) 1px, transparent 1px);
+      background-size: 32px 32px;
+      color: #f8fafc;
+      font-family: var(--font-main);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+    .top-nav {
+      height: 52px;
+      background: linear-gradient(180deg, #1e263d 0%, #151b2d 50%, #0f1423 100%);
+      border-bottom: 1.5px solid rgba(52, 211, 153, 0.35);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.25rem;
+      z-index: 100;
+    }
+    .nav-links { display: flex; gap: 0.4rem; }
+    .nav-pill {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      color: #cbd5e1;
+      padding: 0.32rem 0.8rem;
+      border-radius: 9999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .nav-pill:hover, .nav-pill.active {
+      background: rgba(52, 211, 153, 0.2);
+      border-color: #34d399;
+      color: #fff;
+      box-shadow: 0 0 10px rgba(52, 211, 153, 0.3);
+    }
+    .progress-bar-container { position: fixed; top: 52px; left: 0; width: 100%; height: 3px; background: rgba(0,0,0,0.5); z-index: 100; }
+    .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--y2k-lime), var(--y2k-cyan)); transition: width 0.3s; }
+    #deck-container { position: relative; flex: 1; width: 100%; overflow: hidden; }
+    .slide {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      opacity: 0; visibility: hidden; transform: scale(0.97) translateY(12px);
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: 1.8rem 3.5rem;
+    }
+    .slide.active { opacity: 1; visibility: visible; transform: scale(1) translateY(0); }
+    .slide-content { width: 100%; max-width: 1240px; height: 100%; max-height: 740px; display: flex; flex-direction: column; justify-content: space-between; }
+    .tag { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.22rem 0.7rem; border-radius: 9999px; font-size: 0.76rem; font-weight: 700; background: rgba(52, 211, 153, 0.12); color: var(--y2k-lime); border: 1px solid var(--y2k-lime-border); }
+    .slide-title { font-size: 1.95rem; font-weight: 800; color: #fff; line-height: 1.25; }
+    .slide-subtitle { font-size: 0.92rem; color: #94a3b8; margin-top: 0.25rem; font-weight: 500; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; flex: 1; align-items: stretch; margin-top: 0.75rem; min-height: 0; }
+    .card { background: var(--card-bg); border: 1px solid rgba(52, 211, 153, 0.25); border-radius: 0.65rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35); display: flex; flex-direction: column; overflow: hidden; backdrop-filter: blur(12px); max-height: 100%; }
+    .window-bar { height: 28px; background: linear-gradient(90deg, #1e263d 0%, #262143 50%, #1e263d 100%); display: flex; align-items: center; justify-content: space-between; padding: 0 0.75rem; font-size: 0.75rem; font-weight: 700; color: #cbd5e1; border-bottom: 1px solid rgba(255, 255, 255, 0.08); font-family: var(--font-mono); }
+    .card-body { padding: 1.15rem; flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+    .card h3 { font-size: 1.08rem; font-weight: 700; margin-bottom: 0.65rem; color: #fff; line-height: 1.45; display: block; }
+    .card p, .card li { font-size: 0.88rem; line-height: 1.6; color: #cbd5e1; }
+    .card ul { list-style-type: none; }
+    .card ul li { position: relative; padding-left: 1.35rem; margin-bottom: 0.45rem; }
+    .card ul li::before { content: '▸'; position: absolute; left: 0; color: var(--y2k-lime); font-weight: bold; font-size: 0.95rem; }
+    .schematic-box { width: 100%; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(52, 211, 153, 0.2); border-radius: 0.5rem; padding: 0.5rem; margin-bottom: 0.65rem; }
+    .schematic-box svg { width: 100%; height: auto; display: block; }
+    .metric-badge { display: flex; align-items: baseline; gap: 0.6rem; margin: 0.45rem 0; background: rgba(255, 255, 255, 0.04); padding: 0.45rem 0.8rem; border-radius: 0.5rem; border: 1px solid rgba(52, 211, 153, 0.25); }
+    .metric-val { font-size: 1.35rem; font-weight: 800; color: #34d399; font-family: var(--font-mono); }
+    .metric-label { font-size: 0.78rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; }
+    .styled-table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 0.5rem; overflow: hidden; font-size: 0.82rem; background: rgba(15, 20, 35, 0.9); border: 1px solid rgba(52, 211, 153, 0.25); margin-top: 0.4rem; }
+    .styled-table th { background: #1e2438; padding: 0.55rem 0.75rem; text-align: left; font-weight: 700; color: var(--y2k-lime); border-bottom: 1.5px solid rgba(52, 211, 153, 0.4); }
+    .styled-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: #e2e8f0; }
+    .highlight-cell { font-weight: 800; color: var(--y2k-lime) !important; }
+    .nav-bar { height: 52px; background: linear-gradient(180deg, #151b2d 0%, #0f1423 100%); border-top: 1.5px solid rgba(52, 211, 153, 0.35); display: flex; justify-content: space-between; align-items: center; padding: 0 1.5rem; z-index: 100; }
+    .nav-btn { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(52, 211, 153, 0.4); color: #fff; padding: 0.38rem 0.9rem; border-radius: 9999px; cursor: pointer; font-size: 0.82rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem; transition: all 0.2s; }
+    .nav-btn:hover { background: rgba(52, 211, 153, 0.25); border-color: #34d399; transform: translateY(-1px); }
+  </style>
+</head>
+<body>
+
+  <header class="top-nav">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <a href="../3D_Facial_Animation_Survey.html" class="nav-btn">◀ 返回總覽大簡報</a>
+      <span style="font-size: 0.88rem; font-weight: 800; color: var(--y2k-lime);">🛸 RefFace 專篇</span>
+    </div>
+    <div class="nav-links">
+      <a href="2025_DiffusionTalker.html" class="nav-pill">⚡ 01. DiffusionTalker</a>
+      <a href="2025_RefFace.html" class="nav-pill active">🛸 02. RefFace</a>
+      <a href="2026_EmoPoseFace.html" class="nav-pill">🤖 03. EmoPoseFace</a>
+      <a href="2026_ESGaussianFace.html" class="nav-pill">💖 04. ESGaussianFace</a>
+    </div>
+  </header>
+
+  <div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+
+  <div id="deck-container">
+
+    <!-- SLIDE 1 -->
+    <div class="slide active">
+      <div class="slide-content" style="justify-content: center; align-items: center; text-align: center;">
+        <span class="tag">🛸 AIAHPC 2025 · 幾何防撕裂神作 📐</span>
+        <h1 style="font-size: 3rem; font-weight: 900; margin-bottom: 0.75rem; background: linear-gradient(180deg, #fff 0%, var(--y2k-lime) 60%, var(--y2k-cyan) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+          RefFace 🛸
+        </h1>
+        <p style="font-size: 1.15rem; color: #cbd5e1; max-width: 800px; line-height: 1.6; margin-bottom: 1.5rem;">
+          Generating 3D Speech-Driven Animation with Reference 👾
+        </p>
+        <div style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 2rem;">
+          👨‍💻 作者群：Zhuoliang Jiang, Lanfang Dong (中國科學技術大學 USTC)
+        </div>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+          <div class="metric-badge"><span class="metric-val">👑 3.8466 × 10⁻⁴ mm</span><span class="metric-label">BIWI-Test-A LVE (歷史最高 SOTA)</span></div>
+          <div class="metric-badge"><span class="metric-val">✨ 2.9857 × 10⁻⁵ mm</span><span class="metric-label">BIWI-Test-A FDD (動態最自然)</span></div>
+          <div class="metric-badge"><span class="metric-val">⚡ 0.364 秒</span><span class="metric-label">10步快速推論耗時</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2 -->
+    <div class="slide">
+      <div class="slide-content">
+        <div class="slide-header">
+          <span class="tag">📐 特徵點解耦與法向量防撕裂</span>
+          <h2 class="slide-title">RefFace: 空間時間雙注意力與表面法向量損失 🩹</h2>
+          <p class="slide-subtitle">使語音驅動唇形與外部特徵點控制表情無衝突共存</p>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="window-bar"><span>📍 LANDMARKS.EXE</span></div>
+            <div class="card-body">
+              <h3>📍 1. 48 上半臉特徵點解耦引導</h3>
+              <ul>
+                <li><strong>消除區域干涉 🚫</strong>：傳統 68 特徵點中的 20 個嘴唇點會與語音訊號打架，RefFace 剔除嘴唇點，僅保留 48 個上半臉特徵點作為 Reference！</li>
+                <li><strong>空間注意力 (Spatial Attention) 🧭</strong>：以動作形變特徵為 Query，跨注意力查詢參考特徵點，實現表情輪廓預測。</li>
+                <li><strong>時間注意力與 FiLM 🎞️</strong>：局域遮罩防偷看，FiLM 層注入時間步。</li>
+              </ul>
+            </div>
+          </div>
+          <div class="card" style="border-color: rgba(56, 189, 248, 0.4);">
+            <div class="window-bar"><span>📐 NORMAL_VECTOR_SCHEMATIC.CPP</span></div>
+            <div class="card-body">
+              <!-- Schematic SVG -->
+              <div class="schematic-box">
+                <svg viewBox="0 0 500 130">
+                  <g transform="translate(10, 5)">
+                    <ellipse cx="45" cy="50" rx="38" ry="46" fill="none" stroke="rgba(255, 255, 255, 0.15)" stroke-dasharray="2"/>
+                    <path d="M20 28 Q32 22 40 26" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M50 26 Q58 22 70 28" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+                    <ellipse cx="30" cy="35" rx="6" ry="3.5" fill="none" stroke="#38bdf8" stroke-width="1.5"/>
+                    <circle cx="30" cy="35" r="1.8" fill="#38bdf8"/>
+                    <ellipse cx="60" cy="35" rx="6" ry="3.5" fill="none" stroke="#38bdf8" stroke-width="1.5"/>
+                    <circle cx="60" cy="35" r="1.8" fill="#38bdf8"/>
+                    <path d="M30 70 Q45 65 60 70 Q45 80 30 70 Z" fill="rgba(244, 114, 182, 0.25)" stroke="#f472b6" stroke-width="2"/>
+                    <line x1="10" y1="60" x2="80" y2="60" stroke="#fbbf24" stroke-width="1" stroke-dasharray="2"/>
+                    <text x="5" y="108" fill="#38bdf8" font-size="8">● 48 參考特徵點</text>
+                    <text x="5" y="120" fill="#f472b6" font-size="8">● 20 唇部頂點</text>
+                  </g>
+                  <g transform="translate(115, 8)">
+                    <rect x="0" y="0" width="370" height="46" rx="4" fill="rgba(239, 68, 68, 0.08)" stroke="rgba(239, 68, 68, 0.3)"/>
+                    <text x="8" y="18" fill="#f87171" font-size="9.5" font-weight="700">❌ 無法向量損失：交界面網格撕裂與突變</text>
+                    <text x="8" y="34" fill="#cbd5e1" font-size="8.5">上下半臉來自不同資料源，邊界法向量角度衝突嚴重！</text>
+                    
+                    <rect x="0" y="54" width="370" height="56" rx="4" fill="rgba(52, 211, 153, 0.1)" stroke="rgba(52, 211, 153, 0.4)"/>
+                    <text x="8" y="72" fill="#34d399" font-size="9.5" font-weight="700">✅ 表面法向量損失 L_snv：平滑防撕裂 🩹</text>
+                    <text x="8" y="87" fill="#cbd5e1" font-size="8.5">最大化面片法向量餘弦相似度 cos(n̂₀, n₀)，確保幾何連續！</text>
+                    <text x="8" y="100" fill="#38bdf8" font-size="8.5" font-weight="700">BIWI-Test-A SOTA: LVE 3.8466 (唇部對齊歷史紀錄)</text>
+                  </g>
+                </svg>
+              </div>
+
+              <h3>🩹 2. 表面法向量損失 ($L_{snv}$)</h3>
+              <p>$$\mathcal{L}_{snv} = \sum_{B} \sum_{F} \sum_{faces} \cos(\hat{\mathbf{n}}_0, \mathbf{n}_0)$$</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3 -->
+    <div class="slide">
+      <div class="slide-content">
+        <div class="slide-header">
+          <span class="tag">🏆 實驗結果與消融</span>
+          <h2 class="slide-title">BIWI 基準指標與語音編碼器選型定論 ⚔️</h2>
+          <p class="slide-subtitle">稠密 3D 網格 SOTA 刷新，實證確立 HuBERT 優於 Wav2Vec 2.0</p>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="window-bar"><span>🏆 BIWI_SOTA_RANK.LOG</span></div>
+            <div class="card-body">
+              <h3>🏆 BIWI-Test-A 基準橫向評測榜</h3>
+              <table class="styled-table">
+                <tr><th>方法</th><th>架構</th><th>LVE (10⁻⁴ mm) ↓</th><th>FDD (10⁻⁵ mm) ↓</th><th>時間 (s) ↓</th></tr>
+                <tr><td>FaceFormer</td><td>Transformer</td><td>5.3027</td><td>4.6376</td><td>0.297</td></tr>
+                <tr><td>CodeTalker</td><td>VQ-VAE</td><td>4.7923</td><td>4.1035</td><td>1.578</td></tr>
+                <tr><td>FaceXHuBERT</td><td>Transformer</td><td>4.5673</td><td>4.9675</td><td>0.521</td></tr>
+                <tr><td>FaceDiffuser</td><td>Diffusion</td><td>4.2986</td><td>3.9098</td><td>0.550</td></tr>
+                <tr><td>SelfTalk</td><td>Self-sup</td><td>4.2485</td><td>3.5760</td><td>0.124</td></tr>
+                <tr style="background: rgba(52, 211, 153, 0.15);">
+                  <td><strong>RefFace (Ours) 👑</strong></td>
+                  <td><strong>Landmark Diff</strong></td>
+                  <td class="highlight-cell">3.8466</td>
+                  <td class="highlight-cell">2.9857</td>
+                  <td>0.364</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+          <div class="card" style="border-color: rgba(244, 114, 182, 0.4);">
+            <div class="window-bar"><span>🧪 ABLATION_SHOWDOWN.SYS</span></div>
+            <div class="card-body">
+              <h3>🔬 消融實驗重大發現</h3>
+              <ul>
+                <li><strong>HuBERT 顯著超越 Wav2Vec 2.0 🎧</strong>：換用 Wav2Vec2 後，LVE 惡化至 4.2063，FDD 惡化至 3.4654，證明 HuBERT 在聲學音素分界上更強大！</li>
+                <li><strong>維度分離投影必要性 📐</strong>：獨立對 X, Y, Z 三軸做卷積處理（LVE 3.84 vs 4.03），更能精確學習空間形變。</li>
+                <li><strong>跨序列表情遷移能力 🌈</strong>：成功將 MEAD 的誇張情感表情無縫遷移至 VOCASET 中性音訊上。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="nav-bar">
+    <div style="font-size: 0.82rem; color: #cbd5e1;">🛸 RefFace 專篇 · AIAHPC 2025</div>
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <span class="slide-counter" id="slideCounter" style="font-size: 0.85rem; font-family: var(--font-mono); font-weight: 700; color: var(--y2k-lime);">1 / 3</span>
+      <a href="2025_DiffusionTalker.html" class="nav-btn">◀ 上一篇 DiffusionTalker ⚡</a>
+      <button class="nav-btn" onclick="prevSlide()">◀ 上一頁</button>
+      <button class="nav-btn" onclick="nextSlide()">下一頁 ▶</button>
+      <a href="2026_EmoPoseFace.html" class="nav-btn" style="border-color: var(--y2k-yellow);">跳至下一篇 EmoPoseFace 🤖 ▶</a>
+    </div>
+  </footer>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const progressBar = document.getElementById('progressBar');
+    const slideCounter = document.getElementById('slideCounter');
+    let currentIndex = 0;
+    function updateSlide(idx) {
+      if (idx < 0) idx = 0;
+      if (idx >= slides.length) idx = slides.length - 1;
+      currentIndex = idx;
+      slides.forEach((s, i) => s.classList.toggle('active', i === currentIndex));
+      progressBar.style.width = ((currentIndex + 1) / slides.length) * 100 + '%';
+      slideCounter.textContent = `${currentIndex + 1} / ${slides.length}`;
+    }
+    function nextSlide() { if (currentIndex < slides.length - 1) updateSlide(currentIndex + 1); }
+    function prevSlide() { if (currentIndex > 0) updateSlide(currentIndex - 1); }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+      else if (e.key === 'ArrowLeft') prevSlide();
+    });
+    updateSlide(0);
+  </script>
+</body>
+</html>
